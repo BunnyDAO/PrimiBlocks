@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .h1 { font-size: 22px; font-weight: 700; fill: #0f172a; }
+      .step-num { font-size: 20px; font-weight: 800; fill: #ea580c; }
+      .step-title { font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .step-body { font-size: 12.5px; fill: #475569; }
+      .arrow { stroke: #475569; stroke-width: 1.6; fill: none; }
+      .branch { font-size: 13px; font-weight: 700; fill: #dc2626; }
+    </style>
+  </defs>
+
+  <rect width="1100" height="720" fill="url(#bg)"/>
+  <text x="550" y="40" text-anchor="middle" class="h1">/primi-author — author-skill flow</text>
+  <text x="550" y="62" text-anchor="middle" font-size="13" fill="#64748b">Compose a new template from existing primitives — or file a request when primitives are missing.</text>
+
+  <!-- Step 1 -->
+  <g transform="translate(425, 100)" filter="url(#shadow)">
+    <rect width="250" height="70" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="16" y="32" class="step-num">1</text>
+    <text x="50" y="32" class="step-title">User describes intent</text>
+    <text x="50" y="52" class="step-body">Free-text: what should the new template do?</text>
+  </g>
+
+  <!-- Step 2 -->
+  <g transform="translate(425, 195)" filter="url(#shadow)">
+    <rect width="250" height="70" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="16" y="32" class="step-num">2</text>
+    <text x="50" y="32" class="step-title">Discover primitives</text>
+    <text x="50" y="52" class="step-body">primiblocks list primitives --json</text>
+  </g>
+
+  <!-- Step 3 -->
+  <g transform="translate(425, 290)" filter="url(#shadow)">
+    <rect width="250" height="80" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="16" y="32" class="step-num">3</text>
+    <text x="50" y="32" class="step-title">Pick + order primitives</text>
+    <text x="50" y="52" class="step-body">User selects which to compose, in what order.</text>
+    <text x="50" y="68" class="step-body">For each: surface its contract surface.</text>
+  </g>
+
+  <!-- Branch: any primitives missing? -->
+  <g transform="translate(390, 400)">
+    <polygon points="160,0 320,40 160,80 0,40" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+    <text x="160" y="36" text-anchor="middle" class="branch">Are any needed primitives missing?</text>
+    <text x="160" y="56" text-anchor="middle" font-size="11" fill="#7f1d1d">(referenced primitive not in kit/primitives/)</text>
+  </g>
+
+  <!-- YES branch: file request -->
+  <g transform="translate(40, 520)" filter="url(#shadow)">
+    <rect width="380" height="140" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+    <text x="16" y="32" class="step-num" fill="#dc2626">5a</text>
+    <text x="50" y="32" class="step-title">YES → File a primitive-request</text>
+    <text x="50" y="52" class="step-body">Write kit/requests/&lt;slug&gt;.md with:</text>
+    <text x="50" y="70" class="step-body">  • requested primitive name</text>
+    <text x="50" y="86" class="step-body">  • intended contract (vars + types + constraints)</text>
+    <text x="50" y="102" class="step-body">  • why-it's-needed narrative</text>
+    <text x="50" y="124" class="step-body">Tell user: stop until a developer adds the primitive.</text>
+  </g>
+
+  <!-- NO branch: override → write → lint -->
+  <g transform="translate(680, 520)" filter="url(#shadow)">
+    <rect width="380" height="140" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="16" y="32" class="step-num" fill="#16a34a">4 + 5b + 6</text>
+    <text x="120" y="32" class="step-title">NO → Override + write + lint</text>
+    <text x="50" y="52" class="step-body">  4. Offer to override primitive vars in template</text>
+    <text x="50" y="68" class="step-body">     (tighten enum, change default, rename)</text>
+    <text x="50" y="86" class="step-body">  5b. Write kit/templates/&lt;name&gt;.j2 with</text>
+    <text x="50" y="102" class="step-body">     primitives: [...] + {% include %}s, overrides</text>
+    <text x="50" y="124" class="step-body">  6. primiblocks lint → must exit 0 before "done"</text>
+  </g>
+
+  <!-- Arrows -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 550 172 L 550 193"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 550 267 L 550 288"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 550 372 L 550 398"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 440 470 L 230 518"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 660 470 L 870 518"/>
+
+  <text x="550" y="690" text-anchor="middle" font-size="13" fill="#64748b" font-style="italic">Never invent a primitive in the body without a backing file. lint will catch it; honest request &gt; faked composition.</text>
+</svg>

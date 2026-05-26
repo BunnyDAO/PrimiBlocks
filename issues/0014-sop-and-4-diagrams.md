@@ -2,7 +2,7 @@
 id: 0014
 title: SOP.md + 4 diagrams (effective contract, /primi-fill flow, /primi-author flow, module dep graph)
 type: HITL
-status: open
+status: done
 blocked_by: []
 parent: docs/prd/primiblocks-v1.md
 ---

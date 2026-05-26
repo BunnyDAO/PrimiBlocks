@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 540" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .h1 { font-size: 22px; font-weight: 700; fill: #0f172a; }
+      .mod-name { font-size: 16px; font-weight: 700; fill: #0f172a; font-family: 'SFMono-Regular', 'Consolas', monospace; }
+      .mod-role { font-size: 12.5px; fill: #475569; }
+      .arrow { stroke: #475569; stroke-width: 1.8; fill: none; }
+    </style>
+  </defs>
+
+  <rect width="1100" height="540" fill="url(#bg)"/>
+  <text x="550" y="38" text-anchor="middle" class="h1">primiblocks/ — module dependency graph</text>
+  <text x="550" y="60" text-anchor="middle" font-size="13" fill="#64748b">Leftward = deeper. Right depends on left. Each module is a deep module with a small public interface.</text>
+
+  <!-- errors -->
+  <g transform="translate(40, 230)" filter="url(#shadow)">
+    <rect width="170" height="80" rx="10" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+    <text x="14" y="34" class="mod-name">errors.py</text>
+    <text x="14" y="56" class="mod-role">Base error + typed subclasses.</text>
+    <text x="14" y="72" class="mod-role">Independent.</text>
+  </g>
+
+  <!-- contract -->
+  <g transform="translate(250, 230)" filter="url(#shadow)">
+    <rect width="190" height="80" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="14" y="34" class="mod-name">contract.py</text>
+    <text x="14" y="56" class="mod-role">Parse + validate.</text>
+    <text x="14" y="72" class="mod-role">Types + constraints.</text>
+  </g>
+
+  <!-- _frontmatter -->
+  <g transform="translate(250, 120)" filter="url(#shadow)">
+    <rect width="190" height="60" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+    <text x="14" y="32" class="mod-name">_frontmatter.py</text>
+    <text x="14" y="50" class="mod-role">Internal: split YAML + body.</text>
+  </g>
+
+  <!-- primitives -->
+  <g transform="translate(490, 130)" filter="url(#shadow)">
+    <rect width="190" height="80" rx="10" fill="#ffffff" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="14" y="34" class="mod-name">primitives.py</text>
+    <text x="14" y="56" class="mod-role">Discover + load contracts.</text>
+  </g>
+
+  <!-- templates -->
+  <g transform="translate(490, 330)" filter="url(#shadow)">
+    <rect width="190" height="80" rx="10" fill="#ffffff" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="14" y="34" class="mod-name">templates.py</text>
+    <text x="14" y="56" class="mod-role">Discover + effective_contract.</text>
+  </g>
+
+  <!-- render -->
+  <g transform="translate(730, 230)" filter="url(#shadow)">
+    <rect width="170" height="80" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="14" y="34" class="mod-name">render.py</text>
+    <text x="14" y="56" class="mod-role">Validate-then-Jinja.</text>
+    <text x="14" y="72" class="mod-role">FrontmatterAwareLoader.</text>
+  </g>
+
+  <!-- cli + scaffold + lint (right column) -->
+  <g transform="translate(940, 100)" filter="url(#shadow)">
+    <rect width="140" height="60" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="14" y="32" class="mod-name">cli.py</text>
+    <text x="14" y="50" class="mod-role">argparse + --json</text>
+  </g>
+  <g transform="translate(940, 200)" filter="url(#shadow)">
+    <rect width="140" height="60" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="14" y="32" class="mod-name">lint.py</text>
+    <text x="14" y="50" class="mod-role">Kit-wide checks.</text>
+  </g>
+  <g transform="translate(940, 300)" filter="url(#shadow)">
+    <rect width="140" height="60" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="14" y="32" class="mod-name">scaffold.py</text>
+    <text x="14" y="50" class="mod-role">Stubs for `new`.</text>
+  </g>
+
+  <!-- Edges -->
+  <!-- errors → contract -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 210 270 L 248 270"/>
+  <!-- contract → primitives -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 440 240 L 488 175"/>
+  <!-- contract → templates -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 440 300 L 488 360"/>
+  <!-- _frontmatter → primitives -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 440 162 L 488 162"/>
+  <!-- _frontmatter → templates -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 380 180 L 480 340" stroke-dasharray="3 3"/>
+  <!-- primitives → render -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 680 190 L 728 250"/>
+  <!-- templates → render -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 680 360 L 728 290"/>
+  <!-- render → cli -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 900 250 L 938 150"/>
+  <!-- render → lint (lint also uses templates/primitives) -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 900 270 L 938 230"/>
+  <!-- cli → scaffold (cli invokes scaffold for `new`) -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 1010 162 L 1010 298"/>
+
+  <text x="550" y="500" text-anchor="middle" font-size="13" fill="#64748b" font-style="italic">errors.py, contract.py, _frontmatter.py can be built &amp; tested first. primitives + templates in parallel after contract.</text>
+</svg>

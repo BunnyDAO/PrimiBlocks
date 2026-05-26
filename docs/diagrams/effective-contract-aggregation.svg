@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .h1 { font-size: 22px; font-weight: 700; fill: #0f172a; }
+      .h2 { font-size: 14px; font-weight: 700; fill: #475569; letter-spacing: 0.06em; text-transform: uppercase; }
+      .var-row { font-size: 13px; fill: #0f172a; font-family: 'SFMono-Regular', 'Consolas', monospace; }
+      .var-meta { font-size: 11.5px; fill: #64748b; font-family: 'SFMono-Regular', 'Consolas', monospace; }
+      .arrow { stroke: #475569; stroke-width: 1.6; fill: none; }
+      .override { fill: #dc2626; font-weight: 700; }
+      .keep { fill: #16a34a; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="620" fill="url(#bg)"/>
+  <text x="600" y="40" text-anchor="middle" class="h1">Effective contract aggregation</text>
+  <text x="600" y="62" text-anchor="middle" font-size="13" fill="#64748b">Template vars + every primitive's vars → one effective contract. Template wins on name collision.</text>
+
+  <!-- Primitive A -->
+  <g transform="translate(40, 110)" filter="url(#shadow)">
+    <rect width="320" height="180" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="20" y="30" class="h2" fill="#15803d">Primitive · retrieval_block</text>
+    <text x="20" y="60" class="var-row">index_name <tspan class="var-meta">: string, required</tspan></text>
+    <text x="20" y="80" class="var-meta">  pattern: ^[a-z0-9-]+$</text>
+    <text x="20" y="110" class="var-row">top_k <tspan class="var-meta">: int, default 5</tspan></text>
+    <text x="20" y="130" class="var-meta">  min: 1, max: 50</text>
+    <text x="20" y="160" class="var-row">chunk_separator <tspan class="var-meta">: string</tspan></text>
+  </g>
+
+  <!-- Primitive B -->
+  <g transform="translate(440, 110)" filter="url(#shadow)">
+    <rect width="320" height="180" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="20" y="30" class="h2" fill="#15803d">Primitive · output_format_markdown</text>
+    <text x="20" y="60" class="var-row">sections <tspan class="var-meta">: list, required</tspan></text>
+    <text x="20" y="80" class="var-meta">  min: 1</text>
+  </g>
+
+  <!-- Template contract (overrides) -->
+  <g transform="translate(840, 110)" filter="url(#shadow)">
+    <rect width="320" height="180" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="20" y="30" class="h2" fill="#1d4ed8">Template · rag-qa-prompt</text>
+    <text x="20" y="60" class="var-row">question <tspan class="var-meta">: string, required</tspan></text>
+    <text x="20" y="80" class="var-meta">  (template-only)</text>
+    <text x="20" y="110" class="var-row override">top_k <tspan class="var-meta">: int, max: 10 ◀ override</tspan></text>
+    <text x="20" y="130" class="var-meta">  tighter bound than primitive's 50</text>
+  </g>
+
+  <!-- Arrows down to effective contract -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 200 295 L 200 345"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 600 295 L 600 345"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 1000 295 L 1000 345"/>
+
+  <!-- Effective contract box -->
+  <g transform="translate(40, 350)" filter="url(#shadow)">
+    <rect width="1120" height="220" rx="12" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+    <text x="20" y="32" class="h1" font-size="18" fill="#c2410c">Effective contract</text>
+    <text x="20" y="54" font-size="12" fill="#9a3412">Order: primitive vars first (in primitives: order), then template-only vars. Template wins on name collision.</text>
+
+    <text x="40" y="92" class="var-row">index_name <tspan class="var-meta">: string, required, pattern ^[a-z0-9-]+$</tspan></text>
+    <text x="800" y="92" class="var-meta keep">← retrieval_block (kept)</text>
+
+    <text x="40" y="120" class="var-row">top_k <tspan class="var-meta">: int, default 3, max: 10</tspan></text>
+    <text x="800" y="120" class="var-meta override">← template (REPLACED)</text>
+
+    <text x="40" y="148" class="var-row">chunk_separator <tspan class="var-meta">: string, default "\n---\n"</tspan></text>
+    <text x="800" y="148" class="var-meta keep">← retrieval_block (kept)</text>
+
+    <text x="40" y="176" class="var-row">sections <tspan class="var-meta">: list, required, min 1</tspan></text>
+    <text x="800" y="176" class="var-meta keep">← output_format_markdown (kept)</text>
+
+    <text x="40" y="204" class="var-row">question <tspan class="var-meta">: string, required</tspan></text>
+    <text x="800" y="204" class="var-meta keep">← template (only)</text>
+  </g>
+
+  <text x="600" y="600" text-anchor="middle" font-size="13" fill="#64748b" font-style="italic">ADR-0002: collisions resolve by full template-replace (not field-level merge). See docs/adr/0002-…</text>
+</svg>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .h1 { font-size: 22px; font-weight: 700; fill: #0f172a; }
+      .step-num { font-size: 20px; font-weight: 800; fill: #7c3aed; }
+      .step-title { font-size: 15px; font-weight: 700; fill: #0f172a; }
+      .step-body { font-size: 12.5px; fill: #475569; }
+      .code { font-family: 'SFMono-Regular', 'Consolas', monospace; font-size: 11.5px; fill: #1e293b; }
+      .arrow { stroke: #475569; stroke-width: 1.6; fill: none; }
+    </style>
+  </defs>
+
+  <rect width="1100" height="720" fill="url(#bg)"/>
+  <text x="550" y="40" text-anchor="middle" class="h1">/primi-fill — fill-skill walkthrough</text>
+  <text x="550" y="62" text-anchor="middle" font-size="13" fill="#64748b">7 steps. One var at a time, grouped by primitive. Preview before write.</text>
+
+  <!-- Step 1 -->
+  <g transform="translate(60, 110)" filter="url(#shadow)">
+    <rect width="450" height="80" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="16" y="34" class="step-num">1</text>
+    <text x="50" y="34" class="step-title">List templates</text>
+    <text x="50" y="52" class="step-body">User invokes /primi-fill. Skill enumerates available templates.</text>
+    <text x="50" y="72" class="code">primiblocks list templates --json</text>
+  </g>
+
+  <!-- Step 2 -->
+  <g transform="translate(60, 210)" filter="url(#shadow)">
+    <rect width="450" height="80" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="16" y="34" class="step-num">2</text>
+    <text x="50" y="34" class="step-title">User picks → fetch effective contract</text>
+    <text x="50" y="52" class="step-body">Get the template's effective contract (vars + sources).</text>
+    <text x="50" y="72" class="code">primiblocks contract &lt;template&gt; --json</text>
+  </g>
+
+  <!-- Step 3 -->
+  <g transform="translate(60, 310)" filter="url(#shadow)">
+    <rect width="450" height="130" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="16" y="34" class="step-num">3</text>
+    <text x="50" y="34" class="step-title">Walk vars one at a time, grouped by primitive</text>
+    <text x="50" y="52" class="step-body">For each var: print "Now configuring &lt;primitive&gt;…" on source change.</text>
+    <text x="50" y="68" class="step-body">enum/bool → picker · int with min/max → bounded text</text>
+    <text x="50" y="84" class="step-body">string with pattern → text with hint</text>
+    <text x="50" y="110" class="code">description == the prompt; constraints shape the UI</text>
+  </g>
+
+  <!-- Step 4 -->
+  <g transform="translate(60, 460)" filter="url(#shadow)">
+    <rect width="450" height="80" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="16" y="34" class="step-num">4</text>
+    <text x="50" y="34" class="step-title">Validate per-answer; re-ask on failure</text>
+    <text x="50" y="52" class="step-body">In-skill type/constraint check. On invalid input, surface the reason and re-ask.</text>
+    <text x="50" y="72" class="code">No partial writes, no half-rendered output.</text>
+  </g>
+
+  <!-- Step 5 -->
+  <g transform="translate(590, 110)" filter="url(#shadow)">
+    <rect width="450" height="80" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="16" y="34" class="step-num">5</text>
+    <text x="50" y="34" class="step-title">Persist vars JSON</text>
+    <text x="50" y="52" class="step-body">Write the validated answers for traceability.</text>
+    <text x="50" y="72" class="code">.primiblocks/runs/&lt;timestamp&gt;/vars.json</text>
+  </g>
+
+  <!-- Step 6 -->
+  <g transform="translate(590, 210)" filter="url(#shadow)">
+    <rect width="450" height="80" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="16" y="34" class="step-num">6</text>
+    <text x="50" y="34" class="step-title">Render via CLI</text>
+    <text x="50" y="52" class="step-body">JSON envelope returns the rendered artifact (or a typed error).</text>
+    <text x="50" y="72" class="code">primiblocks render &lt;t&gt; --vars &lt;f&gt; --json</text>
+  </g>
+
+  <!-- Step 7 -->
+  <g transform="translate(590, 310)" filter="url(#shadow)">
+    <rect width="450" height="130" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="16" y="34" class="step-num">7</text>
+    <text x="50" y="34" class="step-title">Preview → confirm → write</text>
+    <text x="50" y="52" class="step-body">Show the rendered artifact in chat. Ask the user:</text>
+    <text x="50" y="68" class="step-body">"Write this to disk?" Options: write to &lt;path&gt;, show again, cancel.</text>
+    <text x="50" y="92" class="step-body">On write: persist to user-chosen path. Tell them vars.json is kept</text>
+    <text x="50" y="108" class="step-body">at .primiblocks/runs/… for reproducibility.</text>
+  </g>
+
+  <!-- Arrows -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 285 192 L 285 208"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 285 292 L 285 308"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 285 442 L 285 458"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 510 500 L 590 350" stroke-dasharray="4 3"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 815 192 L 815 208"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 815 292 L 815 308"/>
+
+  <text x="550" y="650" text-anchor="middle" font-size="13" fill="#64748b" font-style="italic">All renderer interactions go through the CLI's --json mode. The skill never imports the Python module directly.</text>
+</svg>
