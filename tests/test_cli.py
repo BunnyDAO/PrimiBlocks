@@ -361,3 +361,39 @@ def test_doctor_json_mode(tmp_path):
     assert envelope["ok"] is True
     assert isinstance(envelope["data"]["checks"], list)
     assert all("name" in c and "ok" in c for c in envelope["data"]["checks"])
+
+
+# ── contract ──────────────────────────────────────────────────────────────
+
+def test_contract_json_shows_effective_contract(tmp_path):
+    kit = _write_kit(tmp_path)
+    r = _run("contract", "letter", "--kit-dir", str(kit), "--json")
+    assert r.returncode == 0
+    envelope = json.loads(r.stdout)
+    assert envelope["ok"] is True
+    data = envelope["data"]
+    assert data["template"] == "letter"
+    assert data["primitives"] == ["greeting"]
+    var_names = [v["name"] for v in data["vars"]]
+    # `name` from the greeting primitive + `tone` from the template
+    assert "name" in var_names
+    assert "tone" in var_names
+
+
+def test_contract_attributes_vars_to_source(tmp_path):
+    kit = _write_kit(tmp_path)
+    r = _run("contract", "letter", "--kit-dir", str(kit), "--json")
+    data = json.loads(r.stdout)["data"]
+    sources = {v["name"]: v["source"] for v in data["vars"]}
+    assert sources["name"] == "greeting"   # from primitive
+    assert sources["tone"] == "template"   # template-only var
+
+
+def test_contract_human_mode_groups_by_source(tmp_path):
+    kit = _write_kit(tmp_path)
+    r = _run("contract", "letter", "--kit-dir", str(kit))
+    assert r.returncode == 0
+    assert "Template: letter" in r.stdout
+    assert "from greeting" in r.stdout or "greeting" in r.stdout
+    assert "tone" in r.stdout
+    assert "casual" in r.stdout  # enum value

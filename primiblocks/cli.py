@@ -180,6 +180,85 @@ def cmd_new(args: argparse.Namespace) -> int:
     return 0
 
 
+# ── contract ──────────────────────────────────────────────────────────────
+
+def cmd_contract(args: argparse.Namespace) -> int:
+    """Dump a template's effective contract as JSON. Used by skills to drive
+    the fill walkthrough (one question per var, grouped by primitive)."""
+    try:
+        kit_dir = Path(args.kit_dir)
+        template = load_template(args.template, kit_dir)
+        primitives_map = discover_primitives(kit_dir)
+        contract = effective_contract(template, primitives_map)
+    except PrimiBlocksError as e:
+        return _emit_error(args.json_mode, str(e), kind=type(e).__name__)
+    # Build a grouped view: which primitive contributed each var.
+    # Vars contributed by both a primitive and the template (override case)
+    # are attributed to the template.
+    template_var_names = {v.name for v in template.contract.vars}
+    var_to_source: dict[str, str] = {}
+    for prim_name in template.primitives:
+        if prim_name not in primitives_map:
+            continue
+        for v in primitives_map[prim_name].contract.vars:
+            if v.name in template_var_names:
+                continue
+            var_to_source.setdefault(v.name, prim_name)
+    for v in template.contract.vars:
+        var_to_source[v.name] = "template"
+    vars_payload = []
+    for v in contract.vars:
+        vars_payload.append(
+            {
+                "name": v.name,
+                "type": v.type,
+                "description": v.description,
+                "required": v.required,
+                "default": v.default,
+                "enum": v.enum,
+                "min": v.min,
+                "max": v.max,
+                "pattern": v.pattern,
+                "examples": v.examples,
+                "source": var_to_source.get(v.name, "template"),
+            }
+        )
+    payload = {
+        "template": template.name,
+        "template_description": (
+            template.body.split("\n", 1)[0]
+            if not getattr(template, "description", None)
+            else template.description
+        ),
+        "primitives": template.primitives,
+        "vars": vars_payload,
+    }
+    if args.json_mode:
+        print(json.dumps({"ok": True, "data": payload}))
+    else:
+        print(f"Template: {payload['template']}")
+        print(f"Composes primitives: {', '.join(payload['primitives']) or 'none'}\n")
+        last_source = None
+        for v in vars_payload:
+            if v["source"] != last_source:
+                print(f"-- from {v['source']} --")
+                last_source = v["source"]
+            req = "required" if v["required"] else f"optional (default: {v['default']!r})"
+            extras = []
+            if v["enum"]:
+                extras.append(f"enum: {v['enum']}")
+            if v["min"] is not None:
+                extras.append(f"min: {v['min']}")
+            if v["max"] is not None:
+                extras.append(f"max: {v['max']}")
+            if v["pattern"]:
+                extras.append(f"pattern: {v['pattern']!r}")
+            extras_str = f"  [{'; '.join(extras)}]" if extras else ""
+            print(f"  {v['name']}: {v['type']}, {req}{extras_str}")
+            print(f"      {v['description']}")
+    return 0
+
+
 # ── doctor ────────────────────────────────────────────────────────────────
 
 def cmd_doctor(args: argparse.Namespace) -> int:
@@ -296,6 +375,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_new.add_argument("name", help="The name (no extension).")
     _add_common_args(p_new)
     p_new.set_defaults(func=cmd_new)
+
+    p_contract = sub.add_parser(
+        "contract",
+        help="Dump a template's effective contract (used by skills).",
+    )
+    p_contract.add_argument("template", help="Template name (without .j2 extension).")
+    _add_common_args(p_contract)
+    p_contract.set_defaults(func=cmd_contract)
 
     p_doctor = sub.add_parser(
         "doctor",

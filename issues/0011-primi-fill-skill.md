@@ -2,7 +2,7 @@
 id: 0011
 title: /primi-fill skill — grouped-by-primitive walkthrough + preview
 type: HITL
-status: open
+status: done
 blocked_by: [0008, 0010]
 parent: docs/prd/primiblocks-v1.md
 ---

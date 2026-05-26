@@ -2,7 +2,7 @@
 id: 0012
 title: /primi-author skill — primitive picker + new-template + primitive-request
 type: HITL
-status: open
+status: done
 blocked_by: [0008]
 parent: docs/prd/primiblocks-v1.md
 ---
