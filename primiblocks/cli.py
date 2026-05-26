@@ -14,6 +14,14 @@ import json
 import sys
 from pathlib import Path
 
+# Force stdout/stderr to UTF-8 on Windows. The default codepage is cp1252,
+# which can't encode common characters in error messages (em-dashes, etc.)
+# and would crash with UnicodeEncodeError. Safe no-op elsewhere.
+if sys.platform == "win32":
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
 from primiblocks import __version__
 from primiblocks.errors import PrimiBlocksError
 from primiblocks.lint import lint as run_lint
@@ -324,7 +332,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         print(json.dumps(envelope))
     else:
         for c in checks:
-            mark = "✓" if c["ok"] else "✗"
+            mark = "[ok]  " if c["ok"] else "[FAIL]"
             print(f"  {mark}  {c['name']:<24} {c['detail']}")
         print("\nprimiblocks: " + ("all checks passed." if overall_ok else "some checks failed."))
     return 0 if overall_ok else 1

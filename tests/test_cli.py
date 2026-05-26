@@ -25,7 +25,8 @@ def _write_kit(tmp_path: Path) -> Path:
             ---
             Hello, {{ name }}!
             """
-        )
+        ),
+        encoding="utf-8",
     )
     (tmp_path / "templates" / "letter.j2").write_text(
         dedent(
@@ -43,7 +44,8 @@ def _write_kit(tmp_path: Path) -> Path:
             {% include "primitives/greeting.j2" %}
             ({{ tone }})
             """
-        )
+        ),
+        encoding="utf-8",
     )
     return tmp_path
 
@@ -227,7 +229,8 @@ def test_lint_detects_frontmatter_include_drift(tmp_path):
             ---
             extra {{ x }}
             """
-        )
+        ),
+        encoding="utf-8",
     )
     # Rewrite letter.j2 to list `extra` in primitives: but not include it
     (kit / "templates" / "letter.j2").write_text(
@@ -246,7 +249,8 @@ def test_lint_detects_frontmatter_include_drift(tmp_path):
             ---
             {% include "primitives/greeting.j2" %}
             """
-        )
+        ),
+        encoding="utf-8",
     )
     r = _run("lint", "--kit-dir", str(kit))
     assert r.returncode == 1
@@ -273,7 +277,8 @@ def test_lint_detects_broken_include(tmp_path):
             {% include "primitives/greeting.j2" %}
             {% include "primitives/nope.j2" %}
             """
-        )
+        ),
+        encoding="utf-8",
     )
     r = _run("lint", "--kit-dir", str(kit))
     assert r.returncode == 1
@@ -346,7 +351,7 @@ def test_doctor_healthy_kit_passes(tmp_path):
     kit = _write_kit(tmp_path)
     r = _run("doctor", "--kit-dir", str(kit))
     assert r.returncode == 0
-    assert "passed" in r.stdout.lower() or "✓" in r.stdout
+    assert "passed" in r.stdout.lower() or "[ok]" in r.stdout
 
 
 def test_doctor_missing_kit_fails(tmp_path):
