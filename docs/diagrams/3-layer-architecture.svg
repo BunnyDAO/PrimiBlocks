@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .layer-label { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; fill: #475569; }
+      .layer-sub   { font-size: 13px; fill: #64748b; }
+      .node-label  { font-size: 16px; font-weight: 600; fill: #0f172a; }
+      .node-sub    { font-size: 12px; fill: #475569; }
+      .arrow       { stroke: #475569; stroke-width: 1.6; fill: none; }
+    </style>
+  </defs>
+
+  <rect width="1100" height="720" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="550" y="48" text-anchor="middle" font-size="22" font-weight="700" fill="#0f172a">PrimiBlocks — three-layer architecture</text>
+  <text x="550" y="72" text-anchor="middle" font-size="13" fill="#64748b">Primitives compose into Templates. Skills walk users through filling them. The renderer produces an Artifact.</text>
+
+  <!-- Layer 3: Skills -->
+  <g transform="translate(80, 110)">
+    <rect x="0" y="0" width="940" height="120" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="20" y="26" class="layer-label" fill="#5b21b6">Layer 3 · Skills</text>
+    <text x="20" y="46" class="layer-sub">Claude Code skills the user invokes. Wrap the CLI in conversational walkthroughs.</text>
+
+    <g transform="translate(80, 60)" filter="url(#shadow)">
+      <rect width="320" height="48" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+      <text x="20" y="22" class="node-label">/primi-fill</text>
+      <text x="20" y="40" class="node-sub">Walk a template's vars; render; preview; write.</text>
+    </g>
+    <g transform="translate(540, 60)" filter="url(#shadow)">
+      <rect width="320" height="48" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+      <text x="20" y="22" class="node-label">/primi-author</text>
+      <text x="20" y="40" class="node-sub">Compose a new template from primitives, or file a request.</text>
+    </g>
+  </g>
+
+  <!-- Layer 2: Templates -->
+  <g transform="translate(80, 260)">
+    <rect x="0" y="0" width="940" height="140" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="20" y="26" class="layer-label" fill="#1d4ed8">Layer 2 · Templates</text>
+    <text x="20" y="46" class="layer-sub">YAML-frontmatter contract + Jinja2 body. Each declares its primitives: list and own vars. Effective contract = primitive contracts + own (template wins on collision).</text>
+
+    <g transform="translate(40, 60)" filter="url(#shadow)">
+      <rect width="270" height="60" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+      <text x="20" y="22" class="node-label">rag-qa-prompt</text>
+      <text x="20" y="40" class="node-sub">persona + retrieval + task</text>
+      <text x="20" y="54" class="node-sub">+ output_format_markdown</text>
+    </g>
+    <g transform="translate(335, 60)" filter="url(#shadow)">
+      <rect width="270" height="60" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+      <text x="20" y="22" class="node-label">agent-tool-using-prompt</text>
+      <text x="20" y="40" class="node-sub">persona + task + tool_examples</text>
+      <text x="20" y="54" class="node-sub">+ output_format_json + guardrail</text>
+    </g>
+    <g transform="translate(630, 60)" filter="url(#shadow)">
+      <rect width="270" height="60" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+      <text x="20" y="22" class="node-label">eval-judge-prompt</text>
+      <text x="20" y="40" class="node-sub">persona + task + few_shot</text>
+      <text x="20" y="54" class="node-sub">+ output_format_json</text>
+    </g>
+  </g>
+
+  <!-- Layer 1: Primitives -->
+  <g transform="translate(80, 430)">
+    <rect x="0" y="0" width="940" height="140" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="20" y="26" class="layer-label" fill="#15803d">Layer 1 · Primitives</text>
+    <text x="20" y="46" class="layer-sub">Atomic, parameterized, reusable Jinja2 fragments. Each carries its own contract — variables bubble up.</text>
+
+    <g transform="translate(28, 62)">
+      <g transform="translate(0, 0)"><rect width="170" height="32" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1.2"/><text x="12" y="22" class="node-label" font-size="13">system_persona</text></g>
+      <g transform="translate(180, 0)"><rect width="170" height="32" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1.2"/><text x="12" y="22" class="node-label" font-size="13">task_instruction</text></g>
+      <g transform="translate(360, 0)"><rect width="170" height="32" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1.2"/><text x="12" y="22" class="node-label" font-size="13">retrieval_block</text></g>
+      <g transform="translate(540, 0)"><rect width="170" height="32" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1.2"/><text x="12" y="22" class="node-label" font-size="13">tool_use_examples</text></g>
+      <g transform="translate(720, 0)"><rect width="170" height="32" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1.2"/><text x="12" y="22" class="node-label" font-size="13">output_format_json</text></g>
+
+      <g transform="translate(0, 42)"><rect width="170" height="32" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1.2"/><text x="12" y="22" class="node-label" font-size="13">output_format_markdown</text></g>
+      <g transform="translate(180, 42)"><rect width="170" height="32" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1.2"/><text x="12" y="22" class="node-label" font-size="13">few_shot_block</text></g>
+      <g transform="translate(360, 42)"><rect width="170" height="32" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1.2"/><text x="12" y="22" class="node-label" font-size="13">guardrail_refusal</text></g>
+      <g transform="translate(540, 42)"><rect width="170" height="32" rx="6" fill="#fff" stroke="none"/><text x="12" y="22" font-size="13" fill="#475569" font-style="italic">…your domain primitives</text></g>
+    </g>
+  </g>
+
+  <!-- Renderer + artifact (right-side flow) -->
+  <g transform="translate(80, 600)">
+    <rect x="0" y="0" width="940" height="80" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="20" y="26" class="layer-label" fill="#c2410c">Renderer + Artifact</text>
+    <text x="20" y="46" class="layer-sub">primiblocks render &lt;template&gt; --vars vars.json  →  validated against effective contract  →  Jinja2 output.</text>
+    <g transform="translate(660, 16)" filter="url(#shadow)">
+      <rect width="260" height="48" rx="8" fill="#ffffff" stroke="#ea580c" stroke-width="1.4"/>
+      <text x="20" y="22" class="node-label">Artifact</text>
+      <text x="20" y="40" class="node-sub">.md / .json / .yml / .py / ...  </text>
+    </g>
+  </g>
+
+  <!-- Vertical arrows linking layers (skills → templates → primitives → renderer) -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 550 232 L 550 258"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 550 402 L 550 428"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 550 572 L 550 598"/>
+</svg>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .step-num   { font-size: 22px; font-weight: 800; fill: #2563eb; }
+      .step-title { font-size: 16px; font-weight: 700; fill: #0f172a; }
+      .step-body  { font-size: 12.5px; fill: #475569; }
+      .arrow      { stroke: #475569; stroke-width: 1.6; fill: none; }
+      .time       { font-size: 11px; font-weight: 600; fill: #64748b; letter-spacing: 0.08em; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="420" fill="url(#bg)"/>
+
+  <text x="600" y="40" text-anchor="middle" font-size="22" font-weight="700" fill="#0f172a">Fork-and-customize lifecycle</text>
+  <text x="600" y="62" text-anchor="middle" font-size="13" fill="#64748b">From the GitHub landing page to your first working render — under 30 minutes.</text>
+
+  <!-- 6 step boxes -->
+  <g transform="translate(40, 100)" filter="url(#shadow)">
+    <rect width="170" height="200" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="14" y="34" class="step-num">1</text>
+    <text x="14" y="60" class="step-title">Land on repo</text>
+    <text x="14" y="78" class="step-body">github.com/BunnyDAO/</text>
+    <text x="14" y="94" class="step-body">PrimiBlocks</text>
+    <text x="14" y="118" class="step-body">Read README hero +</text>
+    <text x="14" y="134" class="step-body">3-layer architecture</text>
+    <text x="14" y="150" class="step-body">diagram above the fold.</text>
+    <text x="14" y="186" class="time">~30s</text>
+  </g>
+
+  <g transform="translate(232, 100)" filter="url(#shadow)">
+    <rect width="170" height="200" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="14" y="34" class="step-num">2</text>
+    <text x="14" y="60" class="step-title">Use template</text>
+    <text x="14" y="78" class="step-body">Click "Use this template"</text>
+    <text x="14" y="94" class="step-body">to create your own repo,</text>
+    <text x="14" y="110" class="step-body">or git clone the existing</text>
+    <text x="14" y="126" class="step-body">repo + rm -rf .git.</text>
+    <text x="14" y="186" class="time">~90s</text>
+  </g>
+
+  <g transform="translate(424, 100)" filter="url(#shadow)">
+    <rect width="170" height="200" rx="10" fill="#ffffff" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="14" y="34" class="step-num" fill="#16a34a">3</text>
+    <text x="14" y="60" class="step-title">Install + doctor</text>
+    <text x="14" y="78" class="step-body">pip install -e .[dev]</text>
+    <text x="14" y="100" class="step-body">primiblocks doctor</text>
+    <text x="14" y="124" class="step-body">All checks green — you're</text>
+    <text x="14" y="140" class="step-body">on a working install.</text>
+    <text x="14" y="186" class="time">~2min</text>
+  </g>
+
+  <g transform="translate(616, 100)" filter="url(#shadow)">
+    <rect width="170" height="200" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="14" y="34" class="step-num" fill="#7c3aed">4</text>
+    <text x="14" y="60" class="step-title">First /primi-fill</text>
+    <text x="14" y="78" class="step-body">In Claude Code:</text>
+    <text x="14" y="98" class="step-body">/primi-fill</text>
+    <text x="14" y="120" class="step-body">Pick rag-qa-prompt,</text>
+    <text x="14" y="136" class="step-body">walk the contract,</text>
+    <text x="14" y="152" class="step-body">see a real prompt render.</text>
+    <text x="14" y="186" class="time">~5min · first aha</text>
+  </g>
+
+  <g transform="translate(808, 100)" filter="url(#shadow)">
+    <rect width="170" height="200" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="14" y="34" class="step-num" fill="#ea580c">5</text>
+    <text x="14" y="60" class="step-title">Replace kit/</text>
+    <text x="14" y="78" class="step-body">Rip out the reference</text>
+    <text x="14" y="94" class="step-body">LLM-prompt kit.</text>
+    <text x="14" y="116" class="step-body">Drop in YOUR domain's</text>
+    <text x="14" y="132" class="step-body">primitives + templates.</text>
+    <text x="14" y="156" class="step-body">primiblocks lint</text>
+    <text x="14" y="186" class="time">~15min</text>
+  </g>
+
+  <g transform="translate(1000, 100)" filter="url(#shadow)">
+    <rect width="170" height="200" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="14" y="34" class="step-num" fill="#ea580c">6</text>
+    <text x="14" y="60" class="step-title">Ship + share</text>
+    <text x="14" y="78" class="step-body">Your team /primi-fill's</text>
+    <text x="14" y="94" class="step-body">your templates and gets</text>
+    <text x="14" y="110" class="step-body">consistent, validated</text>
+    <text x="14" y="126" class="step-body">artifacts every time.</text>
+    <text x="14" y="186" class="time">ongoing</text>
+  </g>
+
+  <!-- Arrows between steps -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 213 200 L 230 200"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 405 200 L 422 200"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 597 200 L 614 200"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 789 200 L 806 200"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 981 200 L 998 200"/>
+
+  <!-- Footer hint -->
+  <text x="600" y="370" text-anchor="middle" font-size="13" fill="#64748b" font-style="italic">You only touch the framework code in step 5 if you want to. The renderer + skills work unchanged.</text>
+</svg>

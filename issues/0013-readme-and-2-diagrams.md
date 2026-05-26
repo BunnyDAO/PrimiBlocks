@@ -2,7 +2,7 @@
 id: 0013
 title: README.md + 2 diagrams (3-layer arch, fork-and-customize lifecycle)
 type: HITL
-status: open
+status: done
 blocked_by: []
 parent: docs/prd/primiblocks-v1.md
 ---
