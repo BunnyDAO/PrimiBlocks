@@ -2,7 +2,7 @@
 id: 0002
 title: contract.py — type system (string/int/float/bool/list/path/enum)
 type: AFK
-status: open
+status: done
 blocked_by: [0001]
 parent: docs/prd/primiblocks-v1.md
 ---
