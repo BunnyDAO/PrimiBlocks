@@ -2,7 +2,7 @@
 id: 0016
 title: GitHub repo configuration — Template Repo + branch protection + v0.1.0 release
 type: HITL
-status: open
+status: done
 blocked_by: [0015]
 parent: docs/prd/primiblocks-v1.md
 ---
