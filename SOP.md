@@ -158,6 +158,7 @@ vars:                                                                  # optiona
     min: 1                       # optional; int/float value; list length
     max: 50                      # optional; int/float value; list length
     pattern: "^[a-z0-9-]+$"      # optional; regex for string-shaped types
+    hidden: false                # 0.2.0+; UX hint — see "The `hidden` flag" below
 ---
 ```
 
@@ -169,6 +170,24 @@ Notes:
 - **`int` explicitly rejects `bool`** at validation (Python's `isinstance(True, int)` is True; we guard against that silent bug).
 - **`path` is string-shaped** — we don't check filesystem existence at render time.
 - **Defaults bypass type-checking** today (an author who sets `default: "foo"` on a `type: list` won't be told). This is a known sharp edge; the linter may catch it in a later version.
+
+### The `hidden` flag (v0.2.0+)
+
+Mark a var `hidden: true` when the var exists in the contract (for validation, defaults, primitive bubbling) but you don't want `/primi-fill` to ask the user about it. Typical use: template-level overrides of primitive vars that the template body sets per-include via Jinja `{% with %}` blocks. Without `hidden: true`, those plumbing vars would each become an extra question in the walkthrough.
+
+```yaml
+- name: tristimulus
+  type: enum
+  description: (internal — set per-include via {% with %})
+  enum: [TrisX, TrisY, TrisZ]
+  hidden: true
+  default: TrisY
+  required: false
+```
+
+**Critical caveat — `hidden` is a UX hint, NOT a security boundary.** A hidden var is still in the contract. If someone supplies it directly via `primiblocks render --vars vars.json` (bypassing `/primi-fill`), the renderer accepts that value and uses it. Hiding only removes the var from the *conversational walkthrough* — it does **not** lock or seal it.
+
+If you actually want a value to be unoverridable (a literal constant that no caller — skill, CLI, or future maintainer — can change), **don't declare it as a contract var at all.** Bake it into the primitive's body as a plain string. Contract vars are knobs by definition; hiding a knob from the UI doesn't make it not-a-knob.
 
 ## Authoring a primitive
 
