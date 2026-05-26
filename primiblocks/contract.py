@@ -45,6 +45,7 @@ class Var:
     max: float | int | None = None
     pattern: str | None = None
     examples: list[Any] = field(default_factory=list)
+    hidden: bool = False  # 0.2.0 — UX hint: skills (e.g. /primi-fill) skip asking the user about hidden vars.
 
 
 @dataclass
@@ -89,6 +90,7 @@ class Contract:
                     max=v.get("max"),
                     pattern=v.get("pattern"),
                     examples=v.get("examples") or [],
+                    hidden=bool(v.get("hidden", False)),
                 )
             )
         return cls(vars=parsed)

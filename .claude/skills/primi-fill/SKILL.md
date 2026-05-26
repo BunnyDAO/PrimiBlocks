@@ -43,7 +43,7 @@ The `data` field gives you `{template, primitives, vars}`. Each var is `{name, t
 
 ## Step 3 — Walk the vars, one at a time, grouped by primitive
 
-Iterate `data.vars` in order (the renderer already sorted them by primitive). When `source` changes, print a short header to anchor the user:
+Iterate `data.vars` in order (the renderer already sorted them by primitive). **Skip any var where `hidden: true`** — those are intentionally not user-facing (the template author set them via internal `{% with %}` blocks or sensible defaults). When `source` changes (and the next non-hidden var is from a new source), print a short header to anchor the user:
 
 > *"Now configuring the `<source>` block…"*
 

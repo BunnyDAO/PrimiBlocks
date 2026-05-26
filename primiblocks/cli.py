@@ -228,6 +228,7 @@ def cmd_contract(args: argparse.Namespace) -> int:
                 "max": v.max,
                 "pattern": v.pattern,
                 "examples": v.examples,
+                "hidden": v.hidden,
                 "source": var_to_source.get(v.name, "template"),
             }
         )

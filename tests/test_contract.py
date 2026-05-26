@@ -238,3 +238,26 @@ def test_defaults_applied_before_type_check():
         {"vars": [_v(name="k", type="int", required=False, default=5)]}
     )
     assert c.validate({}) == {"k": 5}
+
+
+# ── 0.2.0 — hidden flag ──────────────────────────────────────────────────
+
+def test_hidden_defaults_to_false():
+    c = _contract({"name": "x", "type": "string"})
+    assert c.vars[0].hidden is False
+
+
+def test_hidden_parses_when_set_to_true():
+    c = Contract.parse({"vars": [_v(name="x", type="string", hidden=True)]})
+    assert c.vars[0].hidden is True
+
+
+def test_hidden_does_not_affect_validation():
+    """hidden is a UX hint — validate() still enforces type/constraints."""
+    c = Contract.parse(
+        {"vars": [_v(name="x", type="int", hidden=True, default=5, required=False)]}
+    )
+    assert c.validate({}) == {"x": 5}
+    assert c.validate({"x": 10}) == {"x": 10}
+    with pytest.raises(PrimiBlocksError):
+        c.validate({"x": "not-an-int"})
