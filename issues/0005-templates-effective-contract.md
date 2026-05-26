@@ -2,7 +2,7 @@
 id: 0005
 title: templates.py — effective contract aggregation + template-wins on collision
 type: AFK
-status: open
+status: done
 blocked_by: [0004]
 parent: docs/prd/primiblocks-v1.md
 ---
