@@ -18,7 +18,9 @@ from primiblocks.render import render
 def _build_tracer_kit(tmp_path: Path) -> Path:
     (tmp_path / "primitives").mkdir(parents=True)
     (tmp_path / "templates").mkdir(parents=True)
-    (tmp_path / "primitives" / "hello.j2").write_text("Hello, {{ name }}\n")
+    (tmp_path / "primitives" / "hello.j2").write_text(
+        "Hello, {{ name }}\n", encoding="utf-8"
+    )
     (tmp_path / "templates" / "hello.j2").write_text(
         dedent(
             """\
@@ -34,7 +36,8 @@ def _build_tracer_kit(tmp_path: Path) -> Path:
             ---
             {% include "primitives/hello.j2" %}
             """
-        )
+        ),
+        encoding="utf-8",
     )
     return tmp_path
 

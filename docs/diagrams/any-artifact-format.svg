@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 760" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .title       { font-size: 24px; font-weight: 800; fill: #0f172a; }
+      .subtitle    { font-size: 13px; fill: #64748b; }
+      .lane-head   { font-size: 14px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; fill: #ffffff; }
+      .lane-domain { font-size: 13px; font-weight: 700; fill: #ffffff; }
+      .item-name   { font-size: 13px; font-weight: 600; fill: #0f172a; font-family: 'SFMono-Regular', 'Consolas', monospace; }
+      .item-desc   { font-size: 11.5px; fill: #475569; }
+      .kit-label   { font-size: 12px; font-weight: 700; fill: #b45309; }
+      .runner      { font-size: 12.5px; fill: #475569; font-family: 'SFMono-Regular', 'Consolas', monospace; }
+      .artifact-name { font-size: 16px; font-weight: 800; fill: #ea580c; font-family: 'SFMono-Regular', 'Consolas', monospace; }
+      .arrow       { stroke: #475569; stroke-width: 1.8; fill: none; }
+      .keep-pill   { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; fill: #ffffff; text-transform: uppercase; }
+      .swap-pill   { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; fill: #ffffff; text-transform: uppercase; }
+    </style>
+  </defs>
+
+  <rect width="1300" height="760" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="650" y="46" text-anchor="middle" class="title">Same framework. Any artifact format.</text>
+  <text x="650" y="70" text-anchor="middle" class="subtitle">Swap <tspan font-weight="700" fill="#b45309">kit/</tspan>. The renderer and skills don't change. Three radically different domains, identical scaffolding.</text>
+
+  <!-- Framework banner — IDENTICAL across all 3 lanes -->
+  <g transform="translate(80, 100)" filter="url(#shadow)">
+    <rect x="0" y="0" width="1140" height="74" rx="10" fill="#16a34a"/>
+    <text x="20" y="28" class="lane-head">PrimiBlocks framework  ·  identical for every domain</text>
+    <text x="20" y="52" class="lane-domain">primiblocks render &nbsp;·&nbsp; primiblocks validate &nbsp;·&nbsp; primiblocks lint &nbsp;·&nbsp; primiblocks doctor &nbsp;·&nbsp; /primi-fill &nbsp;·&nbsp; /primi-author</text>
+    <g transform="translate(960, 18)">
+      <rect width="160" height="36" rx="6" fill="#ffffff"/>
+      <text x="80" y="23" text-anchor="middle" class="keep-pill" fill="#15803d">You keep · don't touch</text>
+    </g>
+  </g>
+
+  <!-- Down arrow + "you swap kit/" annotation -->
+  <path class="arrow" marker-end="url(#arrow)" d="M 240 178 L 240 218"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 650 178 L 650 218"/>
+  <path class="arrow" marker-end="url(#arrow)" d="M 1060 178 L 1060 218"/>
+  <text x="650" y="200" text-anchor="middle" font-size="13" font-weight="700" fill="#b45309">↓ you author / swap kit/ per domain ↓</text>
+
+  <!-- Three lanes -->
+
+  <!-- LANE 1: LLM prompts -->
+  <g transform="translate(80, 220)" filter="url(#shadow)">
+    <rect width="320" height="380" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="6 3"/>
+    <rect x="0" y="0" width="320" height="42" rx="10" fill="#7c3aed"/>
+    <rect x="0" y="20" width="320" height="22" fill="#7c3aed"/>
+    <text x="160" y="26" text-anchor="middle" class="lane-head">Domain 1</text>
+    <g transform="translate(220, 8)">
+      <rect width="80" height="22" rx="4" fill="#ffffff"/>
+      <text x="40" y="16" text-anchor="middle" class="swap-pill" fill="#7c3aed">kit/  ·  swap</text>
+    </g>
+    <text x="160" y="60" text-anchor="middle" class="lane-domain" fill="#5b21b6">LLM prompt composition</text>
+
+    <text x="16" y="88" class="kit-label">kit/primitives/</text>
+    <text x="16" y="108" class="item-name">system_persona.j2</text>
+    <text x="16" y="124" class="item-name">retrieval_block.j2</text>
+    <text x="16" y="140" class="item-name">task_instruction.j2</text>
+    <text x="16" y="156" class="item-name">guardrail_refusal.j2</text>
+
+    <text x="16" y="184" class="kit-label">kit/templates/</text>
+    <text x="16" y="204" class="item-name">rag-qa-prompt.j2</text>
+    <text x="16" y="220" class="item-desc">composes the 4 primitives → markdown prompt</text>
+
+    <g transform="translate(16, 248)">
+      <rect width="288" height="50" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+      <text x="14" y="22" class="item-desc" fill="#9a3412">Renders to</text>
+      <text x="14" y="40" class="artifact-name">rag-qa-prompt.md</text>
+    </g>
+
+    <text x="16" y="320" class="kit-label">downstream</text>
+    <text x="16" y="338" class="runner">paste into Claude / GPT</text>
+    <text x="16" y="354" class="runner">→ LLM responds</text>
+  </g>
+
+  <!-- LANE 2: camera → .seqx -->
+  <g transform="translate(490, 220)" filter="url(#shadow)">
+    <rect width="320" height="380" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="6 3"/>
+    <rect x="0" y="0" width="320" height="42" rx="10" fill="#2563eb"/>
+    <rect x="0" y="20" width="320" height="22" fill="#2563eb"/>
+    <text x="160" y="26" text-anchor="middle" class="lane-head">Domain 2</text>
+    <g transform="translate(220, 8)">
+      <rect width="80" height="22" rx="4" fill="#ffffff"/>
+      <text x="40" y="16" text-anchor="middle" class="swap-pill" fill="#2563eb">kit/  ·  swap</text>
+    </g>
+    <text x="160" y="60" text-anchor="middle" class="lane-domain" fill="#1d4ed8">Camera testing  →  sequencer (.seqx)</text>
+
+    <text x="16" y="88" class="kit-label">kit/primitives/</text>
+    <text x="16" y="108" class="item-name">camera_setup.j2</text>
+    <text x="16" y="124" class="item-name">load_fgr_pattern.j2</text>
+    <text x="16" y="140" class="item-name">tile_rois.j2</text>
+    <text x="16" y="156" class="item-name">assert_roi_uniformity.j2</text>
+
+    <text x="16" y="184" class="kit-label">kit/templates/</text>
+    <text x="16" y="204" class="item-name">fgr_uniformity_check.j2</text>
+    <text x="16" y="220" class="item-desc">composes primitives → &lt;sequence&gt; XML</text>
+
+    <g transform="translate(16, 248)">
+      <rect width="288" height="50" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+      <text x="14" y="22" class="item-desc" fill="#9a3412">Renders to</text>
+      <text x="14" y="40" class="artifact-name">fgr_uniformity.seqx</text>
+    </g>
+
+    <text x="16" y="320" class="kit-label">downstream</text>
+    <text x="16" y="338" class="runner">camera-cli run *.seqx</text>
+    <text x="16" y="354" class="runner">→ sequencer executes</text>
+  </g>
+
+  <!-- LANE 3: camera → pytest .py -->
+  <g transform="translate(900, 220)" filter="url(#shadow)">
+    <rect width="320" height="380" rx="10" fill="#ffffff" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="6 3"/>
+    <rect x="0" y="0" width="320" height="42" rx="10" fill="#16a34a"/>
+    <rect x="0" y="20" width="320" height="22" fill="#16a34a"/>
+    <text x="160" y="26" text-anchor="middle" class="lane-head">Domain 3</text>
+    <g transform="translate(220, 8)">
+      <rect width="80" height="22" rx="4" fill="#ffffff"/>
+      <text x="40" y="16" text-anchor="middle" class="swap-pill" fill="#15803d">kit/  ·  swap</text>
+    </g>
+    <text x="160" y="60" text-anchor="middle" class="lane-domain" fill="#15803d">Camera testing  →  pytest (.py)   [HITL]</text>
+
+    <text x="16" y="88" class="kit-label">kit/primitives/</text>
+    <text x="16" y="108" class="item-name">setup_preamble.j2</text>
+    <text x="16" y="124" class="item-name">pattern_capture.j2</text>
+    <text x="16" y="140" class="item-name">assert_centroid.j2</text>
+    <text x="16" y="156" class="item-name">assert_intensity.j2</text>
+
+    <text x="16" y="184" class="kit-label">kit/templates/</text>
+    <text x="16" y="204" class="item-name">vision_centroid.j2</text>
+    <text x="16" y="220" class="item-desc">composes primitives → def test_centroid()</text>
+
+    <g transform="translate(16, 248)">
+      <rect width="288" height="50" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+      <text x="14" y="22" class="item-desc" fill="#9a3412">Renders to</text>
+      <text x="14" y="40" class="artifact-name">test_vision_centroid.py</text>
+    </g>
+
+    <text x="16" y="320" class="kit-label">downstream</text>
+    <text x="16" y="338" class="runner">pytest test_vision_centroid.py</text>
+    <text x="16" y="354" class="runner">→ pass / fail per assertion</text>
+  </g>
+
+  <!-- Footer insight -->
+  <g transform="translate(80, 640)">
+    <rect width="1140" height="100" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.6"/>
+    <text x="20" y="30" font-size="14" font-weight="800" fill="#9a3412">The insight</text>
+    <text x="20" y="56" font-size="13" fill="#451a03">The framework (top green band) is byte-identical in all three lanes. The only thing that differs is what's inside <tspan font-family="'SFMono-Regular','Consolas',monospace" font-weight="700">kit/</tspan> — your domain's primitives and templates.</text>
+    <text x="20" y="76" font-size="13" fill="#451a03">If your team's existing test runner is the sequencer → render <tspan font-family="'SFMono-Regular','Consolas',monospace" font-weight="700">.seqx</tspan>. If it's pytest → render <tspan font-family="'SFMono-Regular','Consolas',monospace" font-weight="700">.py</tspan>. If it's something else entirely (YAML configs, Dockerfiles, GitHub Actions, terraform plans, SQL migrations…) → render <tspan font-style="italic">that</tspan>.</text>
+    <text x="20" y="92" font-size="12" fill="#7c2d12" font-style="italic">PrimiBlocks emits text. Your downstream toolchain decides what to do with it.</text>
+  </g>
+</svg>

@@ -13,7 +13,7 @@ def _write_kit(tmp_path: Path, primitives: dict[str, str]) -> Path:
     """Write a fixture kit with given primitive contents. Returns the kit dir."""
     (tmp_path / "primitives").mkdir(parents=True, exist_ok=True)
     for name, content in primitives.items():
-        (tmp_path / "primitives" / f"{name}.j2").write_text(content)
+        (tmp_path / "primitives" / f"{name}.j2").write_text(content, encoding="utf-8")
     return tmp_path
 
 

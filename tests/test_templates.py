@@ -24,9 +24,9 @@ def _write_kit(
     (tmp_path / "templates").mkdir(parents=True, exist_ok=True)
     (tmp_path / "primitives").mkdir(parents=True, exist_ok=True)
     for name, content in (templates or {}).items():
-        (tmp_path / "templates" / f"{name}.j2").write_text(content)
+        (tmp_path / "templates" / f"{name}.j2").write_text(content, encoding="utf-8")
     for name, content in (primitives or {}).items():
-        (tmp_path / "primitives" / f"{name}.j2").write_text(content)
+        (tmp_path / "primitives" / f"{name}.j2").write_text(content, encoding="utf-8")
     return tmp_path
 
 
