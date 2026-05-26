@@ -37,6 +37,7 @@ To upgrade a diagram to the polished aesthetic:
 | File                                            | Used by    | What it shows                                                                                |
 |-------------------------------------------------|------------|----------------------------------------------------------------------------------------------|
 | `3-layer-architecture.svg`                      | README     | Primitives → Templates → Skills → Renderer → Artifact: the conceptual stack at a glance.     |
+| `any-artifact-format.svg`                       | README     | Same framework, three radically different domains: LLM prompt vs camera `.seqx` vs camera pytest `.py`. |
 | `fork-and-customize-lifecycle.svg`              | README     | The 6-step "Use this template → fork → replace `kit/` → first `/primi-fill`" experience.      |
 | `effective-contract-aggregation.svg`            | SOP        | How a template's `primitives: [...]` list aggregates into the effective contract.            |
 | `primi-fill-flow.svg`                           | SOP        | The 7-step fill-skill walkthrough.                                                            |
