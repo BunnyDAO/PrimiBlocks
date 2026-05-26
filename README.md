@@ -34,6 +34,39 @@ Or in Claude Code: type `/primi-fill`, pick a template, walk the questions, watc
 
 ---
 
+## Same framework. Any artifact format.
+
+The reference kit happens to ship LLM prompts, but **PrimiBlocks doesn't care what you render to.** The renderer emits *text*. Whatever your downstream toolchain consumes — markdown, YAML, JSON, XML, Python, shell, Terraform, SQL — is a valid artifact.
+
+![Same framework, any artifact: LLM prompt vs camera .seqx vs camera pytest .py](docs/diagrams/any-artifact-format.svg)
+
+Three radically different domains, **identical** PrimiBlocks scaffolding. The framework (renderer + skills) is byte-identical in all three. The only thing that differs is what's inside `kit/`.
+
+### Worked example — camera testing
+
+If your team already does camera/vision testing with a sequencer + a `.seqx` file format, the natural artifact is a `.seqx`:
+
+| Layer            | What goes here                                                                                    |
+|------------------|---------------------------------------------------------------------------------------------------|
+| `kit/primitives/`| `camera_setup.j2`, `load_fgr_pattern.j2`, `tile_rois.j2`, `assert_roi_uniformity.j2`              |
+| `kit/templates/` | `fgr_uniformity_check.j2` composes those + a `<sequence>` wrapper                                  |
+| Rendered artifact| `fgr_uniformity.seqx` — a fully validated sequence file                                            |
+| Downstream       | `camera-cli run fgr_uniformity.seqx` → your sequencer executes it                                  |
+
+A vision engineer runs `/primi-fill`, picks `fgr_uniformity_check`, the skill walks them through *every variable the template + primitives declare* (camera ID, exposure, ROI bounds, Lv tolerance, allowed variance % — grouped by primitive so the mental scaffolding maps to the test structure), validates each answer against the contract, and writes a `.seqx` they can run immediately. They never hand-edit XML.
+
+If your team's test runner is pytest instead of the sequencer (the [HITL](https://github.com/BunnyDAO/HITL) pattern), swap the primitive bodies to emit Python and render to `.py` instead. Same framework, different artifact extension.
+
+### Why this matters
+
+Today, every camera test gets hand-written. Variable values drift across runs. Two engineers write subtly different sequences for the "same" test. There's no contract enforcement — a typo in an ROI bound surfaces as a confusing assertion failure ten minutes into execution.
+
+PrimiBlocks puts the **shape** of the test under version control (the template), the **building blocks** under version control (the primitives), and lets the renderer enforce the **typed contract** before a single frame is captured. A non-developer authors hundreds of validated, reproducible tests via conversation. The vars JSON from every `/primi-fill` run is persisted, so any test is rerunnable byte-for-byte.
+
+The same logic applies for **any** domain where you currently hand-author the inputs to an existing toolchain — infra configs, CI workflows, content briefs, agent prompts, code-review checklists. PrimiBlocks replaces *manual, error-prone authoring*, not the toolchain.
+
+---
+
 ## Fork-and-customize lifecycle
 
 ![Six-step lifecycle from landing on the repo to shipping your own kit](docs/diagrams/fork-and-customize-lifecycle.svg)
