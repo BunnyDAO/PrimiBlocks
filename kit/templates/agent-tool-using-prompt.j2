@@ -1,0 +1,28 @@
+---
+description: An agent prompt that uses a single tool with few-shot examples, JSON output, and refusal guardrails.
+primitives:
+  - system_persona
+  - task_instruction
+  - tool_use_examples
+  - output_format_json
+  - guardrail_refusal
+vars:
+  - name: user_request
+    type: string
+    description: The end-user request the agent should act on.
+---
+{% include "primitives/system_persona.j2" %}
+
+{% include "primitives/task_instruction.j2" %}
+
+{% include "primitives/tool_use_examples.j2" %}
+
+{% include "primitives/output_format_json.j2" %}
+
+{% include "primitives/guardrail_refusal.j2" %}
+
+---
+
+## User request
+
+{{ user_request }}

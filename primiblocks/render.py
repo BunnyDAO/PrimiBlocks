@@ -8,14 +8,34 @@ body with a Jinja2 environment rooted at the kit directory (so the body can
 
 Validation runs *before* Jinja renders — bad vars raise a typed
 `PrimiBlocksError` subclass without producing partial output.
+
+The Jinja2 loader is a `FrontmatterAwareLoader` that strips YAML
+frontmatter from every included file before handing it to Jinja, so a
+primitive's contract block never leaks into rendered output.
 """
 
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+from primiblocks._frontmatter import split as split_frontmatter
 from primiblocks.primitives import discover as discover_primitives
 from primiblocks.templates import effective_contract, load_template
+
+
+class FrontmatterAwareLoader(FileSystemLoader):
+    """A Jinja2 loader that strips YAML frontmatter from files it loads.
+
+    Without this, `{% include "primitives/foo.j2" %}` would emit the
+    primitive's contract block (the YAML between `---` fences) into the
+    rendered output. We split frontmatter from body at load time so Jinja
+    only ever sees the body.
+    """
+
+    def get_source(self, environment, template):
+        source, filename, uptodate = super().get_source(environment, template)
+        _, body = split_frontmatter(source)
+        return body, filename, uptodate
 
 
 def render(template_name: str, vars: dict, kit_dir: Path) -> str:
@@ -31,7 +51,7 @@ def render(template_name: str, vars: dict, kit_dir: Path) -> str:
     contract = effective_contract(template, primitives_map)
     validated = contract.validate(vars)
     env = Environment(
-        loader=FileSystemLoader(str(kit_dir)),
+        loader=FrontmatterAwareLoader(str(kit_dir)),
         autoescape=False,
         keep_trailing_newline=False,
     )

@@ -1,0 +1,91 @@
+{
+  "rag-qa-prompt": {
+    "persona_name": "Senior PostgreSQL DBA",
+    "tone": "professional",
+    "expertise_domain": "PostgreSQL performance and indexing strategies",
+    "index_name": "postgres-docs",
+    "top_k": 5,
+    "chunk_separator": "\n---\n",
+    "task_summary": "Answer the user's question using only the retrieved documentation passages.",
+    "constraints": [
+      "Cite each claim with the source chunk's heading.",
+      "Limit the answer to 300 words."
+    ],
+    "success_criteria": "Each claim is grounded in the retrieved chunks; the answer is concise and actionable.",
+    "sections": ["Answer", "Sources", "Caveats"],
+    "question": "How do I diagnose slow index scans on a large table?"
+  },
+  "agent-tool-using-prompt": {
+    "persona_name": "Code Review Agent",
+    "tone": "professional",
+    "expertise_domain": "secure code review for Python web applications",
+    "task_summary": "Review the user's diff and call the flag_issue tool for each problem found.",
+    "constraints": [
+      "Each flagged issue must cite the file and line number.",
+      "Do not flag style-only issues unless explicitly asked."
+    ],
+    "success_criteria": "Every real security or correctness issue is flagged; no false positives.",
+    "tool_name": "flag_issue",
+    "examples": [
+      {
+        "input": "diff with SQL injection in src/db.py line 42",
+        "tool_call": {
+          "name": "flag_issue",
+          "args": {
+            "file": "src/db.py",
+            "line": 42,
+            "severity": "high",
+            "category": "sql-injection"
+          }
+        }
+      },
+      {
+        "input": "diff with hard-coded API key in config/secrets.py line 7",
+        "tool_call": {
+          "name": "flag_issue",
+          "args": {
+            "file": "config/secrets.py",
+            "line": 7,
+            "severity": "critical",
+            "category": "hardcoded-credential"
+          }
+        }
+      }
+    ],
+    "schema_path": "schemas/flag_issue.json",
+    "strict": true,
+    "forbidden_topics": [
+      "writing exploit code",
+      "bypassing authentication or rate limits",
+      "harvesting personally identifiable information"
+    ],
+    "refusal_template": "I can't help with that request as it would create or enable security harm.",
+    "user_request": "Review the diff at PR #123 and flag any issues."
+  },
+  "eval-judge-prompt": {
+    "persona_name": "LLM Output Judge",
+    "expertise_domain": "evaluating factual accuracy, tone, and adherence to instructions in LLM outputs",
+    "task_summary": "Score the candidate response against the reference on a 1-5 scale and justify the score.",
+    "constraints": [
+      "Score on a 1-5 integer scale (5 = faithful, 1 = contradicts).",
+      "Justify the score with at least two specific observations.",
+      "Do not score on style or fluency — only on factual fidelity to the reference."
+    ],
+    "success_criteria": "Both score and justification are present, consistent with each other, and reference specific phrases.",
+    "examples": [
+      {
+        "input": "Reference: \"The earth orbits the sun.\" Candidate: \"Our planet orbits the sun.\"",
+        "output": "{\"score\": 5, \"reason\": \"Faithful rewording; no factual drift.\"}"
+      },
+      {
+        "input": "Reference: \"The earth orbits the sun.\" Candidate: \"The sun orbits the earth.\"",
+        "output": "{\"score\": 1, \"reason\": \"Contradicts the reference on the central claim.\"}"
+      }
+    ],
+    "separator": "\n---\n",
+    "schema_path": "schemas/judge_score.json",
+    "strict": true,
+    "reference_response": "<<REFERENCE RESPONSE TEXT HERE>>",
+    "candidate_response": "<<CANDIDATE RESPONSE TEXT HERE>>"
+  }
+}

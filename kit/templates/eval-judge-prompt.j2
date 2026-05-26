@@ -1,0 +1,38 @@
+---
+description: An LLM-as-judge prompt for evaluating a candidate response against a reference. Locks tone to professional via primitive var override.
+primitives:
+  - system_persona
+  - task_instruction
+  - few_shot_block
+  - output_format_json
+vars:
+  - name: tone
+    type: enum
+    description: Judge tone — locked to professional for eval consistency.
+    enum: [professional]
+    default: professional
+    required: false
+  - name: reference_response
+    type: string
+    description: The reference (gold) response to judge the candidate against.
+  - name: candidate_response
+    type: string
+    description: The candidate response under evaluation.
+---
+{% include "primitives/system_persona.j2" %}
+
+{% include "primitives/task_instruction.j2" %}
+
+{% include "primitives/few_shot_block.j2" %}
+
+{% include "primitives/output_format_json.j2" %}
+
+---
+
+## Reference response
+
+{{ reference_response }}
+
+## Candidate response
+
+{{ candidate_response }}

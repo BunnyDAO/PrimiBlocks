@@ -1,0 +1,25 @@
+---
+description: A retrieval-augmented QA prompt. Pairs a domain persona with retrieved context and a structured markdown answer.
+primitives:
+  - system_persona
+  - retrieval_block
+  - task_instruction
+  - output_format_markdown
+vars:
+  - name: question
+    type: string
+    description: The user's question to answer using the retrieved context.
+---
+{% include "primitives/system_persona.j2" %}
+
+{% include "primitives/retrieval_block.j2" %}
+
+{% include "primitives/task_instruction.j2" %}
+
+{% include "primitives/output_format_markdown.j2" %}
+
+---
+
+## User question
+
+{{ question }}

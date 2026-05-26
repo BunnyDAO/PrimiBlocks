@@ -154,6 +154,46 @@ def test_render_missing_template_raises(tmp_path):
         render("does_not_exist", {}, kit_dir=tmp_path)
 
 
+def test_render_strips_primitive_frontmatter_from_output(tmp_path):
+    """Regression: included primitives must NOT leak their YAML frontmatter
+    into the rendered output."""
+    kit = _write_kit(
+        tmp_path,
+        primitives={
+            "greeting": dedent(
+                """\
+                ---
+                description: Greets someone.
+                vars:
+                  - name: name
+                    type: string
+                    description: Who to greet.
+                ---
+                Hello, {{ name }}!
+                """
+            ),
+        },
+        templates={
+            "letter": dedent(
+                """\
+                ---
+                description: A short letter.
+                primitives:
+                  - greeting
+                ---
+                {% include "primitives/greeting.j2" %}
+                """
+            ),
+        },
+    )
+    out = render("letter", {"name": "World"}, kit_dir=kit)
+    assert "Hello, World!" in out
+    # Frontmatter markers and contract fields must not appear in output.
+    assert "---" not in out
+    assert "description:" not in out
+    assert "type: string" not in out
+
+
 def test_render_template_overrides_primitive_var_value(tmp_path):
     """When template overrides a primitive var (e.g., tighter bounds), the
     template's constraint is the one enforced."""
