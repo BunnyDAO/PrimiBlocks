@@ -2,7 +2,7 @@
 id: 0008
 title: cli.py — lint, list, new, doctor subcommands
 type: AFK
-status: open
+status: done
 blocked_by: [0007]
 parent: docs/prd/primiblocks-v1.md
 ---

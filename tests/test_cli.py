@@ -202,3 +202,162 @@ def test_unknown_subcommand_exits_2(tmp_path):
 def test_missing_required_arg_exits_2(tmp_path):
     r = _run("render")  # missing positional template arg
     assert r.returncode == 2
+
+
+# ── lint ──────────────────────────────────────────────────────────────────
+
+def test_lint_clean_kit_exits_0(tmp_path):
+    kit = _write_kit(tmp_path)
+    r = _run("lint", "--kit-dir", str(kit))
+    assert r.returncode == 0
+
+
+def test_lint_detects_frontmatter_include_drift(tmp_path):
+    kit = _write_kit(tmp_path)
+    # Add a primitive that's declared in frontmatter but not included in body
+    (kit / "primitives" / "extra.j2").write_text(
+        dedent(
+            """\
+            ---
+            description: Extra primitive.
+            vars:
+              - name: x
+                type: string
+                description: x
+            ---
+            extra {{ x }}
+            """
+        )
+    )
+    # Rewrite letter.j2 to list `extra` in primitives: but not include it
+    (kit / "templates" / "letter.j2").write_text(
+        dedent(
+            """\
+            ---
+            description: drift test
+            primitives:
+              - greeting
+              - extra
+            vars:
+              - name: tone
+                type: enum
+                description: Tone.
+                enum: [casual, formal]
+            ---
+            {% include "primitives/greeting.j2" %}
+            """
+        )
+    )
+    r = _run("lint", "--kit-dir", str(kit))
+    assert r.returncode == 1
+    assert "drift" in r.stderr.lower() or "include" in r.stderr.lower()
+
+
+def test_lint_detects_broken_include(tmp_path):
+    kit = _write_kit(tmp_path)
+    # Reference a non-existent primitive
+    (kit / "templates" / "letter.j2").write_text(
+        dedent(
+            """\
+            ---
+            description: broken
+            primitives:
+              - greeting
+              - nope
+            vars:
+              - name: tone
+                type: enum
+                description: Tone.
+                enum: [casual]
+            ---
+            {% include "primitives/greeting.j2" %}
+            {% include "primitives/nope.j2" %}
+            """
+        )
+    )
+    r = _run("lint", "--kit-dir", str(kit))
+    assert r.returncode == 1
+
+
+def test_lint_json_mode(tmp_path):
+    kit = _write_kit(tmp_path)
+    r = _run("lint", "--kit-dir", str(kit), "--json")
+    assert r.returncode == 0
+    envelope = json.loads(r.stdout)
+    assert envelope["ok"] is True
+
+
+# ── list ──────────────────────────────────────────────────────────────────
+
+def test_list_templates(tmp_path):
+    kit = _write_kit(tmp_path)
+    r = _run("list", "templates", "--kit-dir", str(kit))
+    assert r.returncode == 0
+    assert "letter" in r.stdout
+
+
+def test_list_primitives(tmp_path):
+    kit = _write_kit(tmp_path)
+    r = _run("list", "primitives", "--kit-dir", str(kit))
+    assert r.returncode == 0
+    assert "greeting" in r.stdout
+
+
+def test_list_templates_json(tmp_path):
+    kit = _write_kit(tmp_path)
+    r = _run("list", "templates", "--kit-dir", str(kit), "--json")
+    assert r.returncode == 0
+    envelope = json.loads(r.stdout)
+    assert envelope["ok"] is True
+    names = [item["name"] for item in envelope["data"]]
+    assert "letter" in names
+
+
+# ── new ───────────────────────────────────────────────────────────────────
+
+def test_new_template_writes_stub_that_parses(tmp_path):
+    kit = tmp_path / "kit"
+    r = _run("new", "template", "my_template", "--kit-dir", str(kit))
+    assert r.returncode == 0
+    assert (kit / "templates" / "my_template.j2").exists()
+    # The stub should be parseable + lintable (after we fill the placeholder)
+    r2 = _run("list", "templates", "--kit-dir", str(kit))
+    assert r2.returncode == 0
+    assert "my_template" in r2.stdout
+
+
+def test_new_primitive_writes_stub_that_parses(tmp_path):
+    kit = tmp_path / "kit"
+    r = _run("new", "primitive", "my_prim", "--kit-dir", str(kit))
+    assert r.returncode == 0
+    assert (kit / "primitives" / "my_prim.j2").exists()
+
+
+def test_new_template_existing_name_fails(tmp_path):
+    kit = _write_kit(tmp_path)
+    r = _run("new", "template", "letter", "--kit-dir", str(kit))
+    assert r.returncode == 1
+    assert "exists" in r.stderr.lower() or "already" in r.stderr.lower()
+
+
+# ── doctor ────────────────────────────────────────────────────────────────
+
+def test_doctor_healthy_kit_passes(tmp_path):
+    kit = _write_kit(tmp_path)
+    r = _run("doctor", "--kit-dir", str(kit))
+    assert r.returncode == 0
+    assert "passed" in r.stdout.lower() or "✓" in r.stdout
+
+
+def test_doctor_missing_kit_fails(tmp_path):
+    r = _run("doctor", "--kit-dir", str(tmp_path / "no_such_kit"))
+    assert r.returncode == 1
+
+
+def test_doctor_json_mode(tmp_path):
+    kit = _write_kit(tmp_path)
+    r = _run("doctor", "--kit-dir", str(kit), "--json")
+    envelope = json.loads(r.stdout)
+    assert envelope["ok"] is True
+    assert isinstance(envelope["data"]["checks"], list)
+    assert all("name" in c and "ok" in c for c in envelope["data"]["checks"])
