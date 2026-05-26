@@ -2,7 +2,7 @@
 id: 0017
 title: tests/ — reference kit smoke test in CI
 type: AFK
-status: open
+status: done
 blocked_by: [0010]
 parent: docs/prd/primiblocks-v1.md
 ---

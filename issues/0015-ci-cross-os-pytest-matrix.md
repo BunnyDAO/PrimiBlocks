@@ -2,7 +2,7 @@
 id: 0015
 title: CI — cross-OS pytest matrix (mac/linux/win × Python 3.11/3.12)
 type: AFK
-status: open
+status: done
 blocked_by: [0001]
 parent: docs/prd/primiblocks-v1.md
 ---

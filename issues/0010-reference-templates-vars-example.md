@@ -2,7 +2,7 @@
 id: 0010
 title: Reference kit — 3 templates + vars.example.json
 type: AFK
-status: in_progress
+status: done
 blocked_by: [0006, 0009]
 parent: docs/prd/primiblocks-v1.md
 ---
