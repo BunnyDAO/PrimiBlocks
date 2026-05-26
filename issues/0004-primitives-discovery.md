@@ -2,7 +2,7 @@
 id: 0004
 title: primitives.py — discovery + contract loading
 type: AFK
-status: open
+status: done
 blocked_by: [0003]
 parent: docs/prd/primiblocks-v1.md
 ---
