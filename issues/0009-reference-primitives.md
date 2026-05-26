@@ -2,7 +2,7 @@
 id: 0009
 title: Reference kit — 8 LLM-prompt primitives
 type: AFK
-status: open
+status: done
 blocked_by: [0004]
 parent: docs/prd/primiblocks-v1.md
 ---

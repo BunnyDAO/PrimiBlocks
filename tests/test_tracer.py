@@ -1,27 +1,51 @@
-"""Tracer-bullet tests for the renderer. Proves end-to-end render works.
+"""Tracer-bullet smoke tests for the renderer.
 
-These tests use the bundled reference `hello` template + primitive in `kit/`.
-They are the architectural seed: every subsequent slice extends the modules
-exercised here without changing their public interfaces.
+Uses a temporary fixture kit (not the real `kit/` reference kit) so these
+tests remain stable as the reference kit evolves. The integration tests in
+`test_render.py` exercise the same paths more exhaustively; these are the
+minimal smoke for the architectural seed (issue 0001).
 """
 
 from pathlib import Path
+from textwrap import dedent
 
 import pytest
 
-from primiblocks.errors import PrimiBlocksError
+from primiblocks.errors import MissingVariableError
 from primiblocks.render import render
 
-KIT_DIR = Path(__file__).parent.parent / "kit"
+
+def _build_tracer_kit(tmp_path: Path) -> Path:
+    (tmp_path / "primitives").mkdir(parents=True)
+    (tmp_path / "templates").mkdir(parents=True)
+    (tmp_path / "primitives" / "hello.j2").write_text("Hello, {{ name }}\n")
+    (tmp_path / "templates" / "hello.j2").write_text(
+        dedent(
+            """\
+            ---
+            description: Tracer-bullet template. Says hello to someone.
+            primitives:
+              - hello
+            vars:
+              - name: name
+                type: string
+                description: Who to greet.
+                required: true
+            ---
+            {% include "primitives/hello.j2" %}
+            """
+        )
+    )
+    return tmp_path
 
 
-def test_tracer_renders_hello_world():
-    """Rendering the hello template with name=World produces 'Hello, World'."""
-    output = render("hello", {"name": "World"}, kit_dir=KIT_DIR)
+def test_tracer_renders_hello_world(tmp_path):
+    kit = _build_tracer_kit(tmp_path)
+    output = render("hello", {"name": "World"}, kit_dir=kit)
     assert "Hello, World" in output
 
 
-def test_tracer_missing_required_var_raises():
-    """Rendering the hello template without the required `name` var raises."""
-    with pytest.raises(PrimiBlocksError):
-        render("hello", {}, kit_dir=KIT_DIR)
+def test_tracer_missing_required_var_raises(tmp_path):
+    kit = _build_tracer_kit(tmp_path)
+    with pytest.raises(MissingVariableError):
+        render("hello", {}, kit_dir=kit)

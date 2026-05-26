@@ -1,0 +1,24 @@
+---
+description: Few-shot examples showing how a specific tool should be called by the model.
+vars:
+  - name: tool_name
+    type: string
+    description: Name of the tool the examples demonstrate.
+  - name: examples
+    type: list
+    description: List of `{input, tool_call}` objects. `tool_call` should be a JSON-serialisable dict.
+    min: 1
+---
+## Tool examples: `{{ tool_name }}`
+
+{% for ex in examples %}
+### Example {{ loop.index }}
+
+**Input:** {{ ex.input }}
+
+**Tool call:**
+```json
+{{ ex.tool_call | tojson }}
+```
+
+{% endfor %}

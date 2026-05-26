@@ -1,0 +1,15 @@
+---
+description: Asks the model to structure its response as markdown with specific named sections.
+vars:
+  - name: sections
+    type: list
+    description: Ordered list of section headings the response must contain.
+    min: 1
+---
+## Output format
+
+Structure your response as markdown with the following sections, in order.
+Each section must contain at least one paragraph.
+
+{% for s in sections %}- ## {{ s }}
+{% endfor %}

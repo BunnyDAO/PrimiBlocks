@@ -1,0 +1,23 @@
+---
+description: Constrains the model's response to a JSON schema (referenced by path).
+vars:
+  - name: schema_path
+    type: path
+    description: Path (relative to the application) to the JSON schema the response must conform to.
+  - name: strict
+    type: bool
+    description: If true, the response must be JSON only — no prose.
+    default: true
+    required: false
+---
+## Output format
+
+Respond with valid JSON conforming to the schema at `{{ schema_path }}`.
+
+{% if strict %}
+Do not include any prose, comments, or markdown before or after the JSON.
+The entire response must be parseable JSON.
+{% else %}
+You may include brief explanatory prose, but the primary payload must be
+valid JSON conforming to the schema.
+{% endif %}

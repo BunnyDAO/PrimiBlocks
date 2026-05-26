@@ -1,0 +1,27 @@
+---
+description: Inserts a retrieval-grounded context block. The application substitutes <<RETRIEVED_CHUNKS>> with real chunks at runtime.
+vars:
+  - name: index_name
+    type: string
+    description: Name of the retrieval index to query. Lowercase, dashes only.
+    pattern: "^[a-z0-9-]+$"
+  - name: top_k
+    type: int
+    description: Number of chunks to retrieve from the index.
+    min: 1
+    max: 50
+    default: 5
+    required: false
+  - name: chunk_separator
+    type: string
+    description: Separator placed between retrieved chunks in the rendered prompt.
+    default: "\n---\n"
+    required: false
+---
+## Retrieved context
+
+The following passages were retrieved from the `{{ index_name }}` index
+(top_k = {{ top_k }}). Use them to ground your answer; if the answer is not
+supported by these passages, say so explicitly.
+
+<<RETRIEVED_CHUNKS index={{ index_name }} k={{ top_k }} separator={{ chunk_separator | tojson }}>>

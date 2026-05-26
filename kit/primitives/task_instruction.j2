@@ -1,0 +1,28 @@
+---
+description: Declares the task to the model, with optional constraints and a success criterion.
+vars:
+  - name: task_summary
+    type: string
+    description: One-sentence description of the task to perform.
+  - name: constraints
+    type: list
+    description: Optional list of explicit constraints the response must respect (e.g., word limits, style rules).
+    required: false
+    default: []
+  - name: success_criteria
+    type: string
+    description: How the caller will judge whether the response is correct or complete.
+---
+## Task
+
+{{ task_summary }}
+
+{% if constraints %}
+### Constraints
+
+{% for c in constraints %}- {{ c }}
+{% endfor %}
+{% endif %}
+### Success criteria
+
+{{ success_criteria }}

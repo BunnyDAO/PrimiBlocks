@@ -1,0 +1,20 @@
+---
+description: Generic few-shot input/output exemplars the model should imitate in form.
+vars:
+  - name: examples
+    type: list
+    description: List of `{input, output}` objects demonstrating the desired response form.
+    min: 1
+  - name: separator
+    type: string
+    description: Visual separator placed between examples in the rendered prompt.
+    default: "\n\n"
+    required: false
+---
+## Examples
+
+{% for ex in examples %}
+**Input:** {{ ex.input }}
+
+**Output:** {{ ex.output }}{{ separator }}
+{% endfor %}
