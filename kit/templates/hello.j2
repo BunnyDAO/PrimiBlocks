@@ -3,6 +3,7 @@ description: Tracer-bullet template. Says hello to someone via the hello primiti
 vars:
   - name: name
     type: string
+    description: Who to greet.
     required: true
 ---
 {% include "primitives/hello.j2" %}

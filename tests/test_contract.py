@@ -12,8 +12,11 @@ from primiblocks.errors import PrimiBlocksError
 # ── 0002 — type system ────────────────────────────────────────────────────
 
 def _contract(*vars_):
-    """Helper: build a Contract from a list of var-dicts."""
-    return Contract.parse({"vars": list(vars_)})
+    """Helper: build a Contract from a list of var-dicts. Auto-injects a
+    placeholder `description` (which 0003 makes mandatory) so older type-only
+    tests stay readable without re-stating it."""
+    enriched = [{"description": "test", **v} for v in vars_]
+    return Contract.parse({"vars": enriched})
 
 
 def test_string_type_accepts_string():
@@ -112,3 +115,126 @@ def test_type_error_message_cites_field_name():
     c = _contract({"name": "username", "type": "string"})
     with pytest.raises(PrimiBlocksError, match=re.compile(r"username", re.IGNORECASE)):
         c.validate({"username": 99})
+
+
+# ── 0003 — constraints ──────────────────────────────────────────────────────
+
+def _v(**kw):
+    """Helper for 0003 tests: build a var-dict with sensible defaults."""
+    kw.setdefault("name", "x")
+    kw.setdefault("type", "string")
+    kw.setdefault("description", "test var")
+    return kw
+
+
+def test_description_required_on_every_var():
+    with pytest.raises(PrimiBlocksError, match="description"):
+        Contract.parse({"vars": [{"name": "x", "type": "string"}]})
+
+
+def test_description_can_be_any_nonempty_string():
+    c = Contract.parse({"vars": [_v(description="A short blurb.")]})
+    assert c.vars[0].description == "A short blurb."
+
+
+def test_required_false_allows_missing_with_default():
+    c = Contract.parse({"vars": [_v(name="x", type="int", required=False, default=42)]})
+    assert c.validate({}) == {"x": 42}
+
+
+def test_required_false_uses_none_when_no_default_given():
+    c = Contract.parse({"vars": [_v(name="x", type="int", required=False)]})
+    assert c.validate({}) == {"x": None}
+
+
+def test_required_true_still_raises_when_missing():
+    c = Contract.parse({"vars": [_v(name="x", type="string", required=True)]})
+    with pytest.raises(PrimiBlocksError, match="missing required"):
+        c.validate({})
+
+
+def test_enum_accepts_allowed_value():
+    c = Contract.parse({"vars": [_v(name="tone", type="enum", enum=["a", "b"])]})
+    assert c.validate({"tone": "a"}) == {"tone": "a"}
+
+
+def test_enum_rejects_disallowed_value():
+    c = Contract.parse({"vars": [_v(name="tone", type="enum", enum=["a", "b"])]})
+    with pytest.raises(PrimiBlocksError, match="enum"):
+        c.validate({"tone": "c"})
+
+
+def test_enum_on_string_also_works():
+    """enum is also valid as a constraint on type:string."""
+    c = Contract.parse({"vars": [_v(name="t", type="string", enum=["x", "y"])]})
+    assert c.validate({"t": "x"}) == {"t": "x"}
+    with pytest.raises(PrimiBlocksError):
+        c.validate({"t": "z"})
+
+
+def test_min_max_on_int_in_range():
+    c = Contract.parse({"vars": [_v(name="k", type="int", min=1, max=10)]})
+    assert c.validate({"k": 5}) == {"k": 5}
+
+
+def test_min_max_on_int_below_min():
+    c = Contract.parse({"vars": [_v(name="k", type="int", min=1, max=10)]})
+    with pytest.raises(PrimiBlocksError, match="min"):
+        c.validate({"k": 0})
+
+
+def test_min_max_on_int_above_max():
+    c = Contract.parse({"vars": [_v(name="k", type="int", min=1, max=10)]})
+    with pytest.raises(PrimiBlocksError, match="max"):
+        c.validate({"k": 11})
+
+
+def test_min_max_on_float():
+    c = Contract.parse({"vars": [_v(name="x", type="float", min=0.0, max=1.0)]})
+    assert c.validate({"x": 0.5}) == {"x": 0.5}
+    with pytest.raises(PrimiBlocksError):
+        c.validate({"x": 1.5})
+
+
+def test_min_max_on_list_length():
+    c = Contract.parse({"vars": [_v(name="xs", type="list", min=2, max=4)]})
+    assert c.validate({"xs": [1, 2, 3]}) == {"xs": [1, 2, 3]}
+    with pytest.raises(PrimiBlocksError):
+        c.validate({"xs": [1]})
+    with pytest.raises(PrimiBlocksError):
+        c.validate({"xs": [1, 2, 3, 4, 5]})
+
+
+def test_pattern_matches_string():
+    c = Contract.parse(
+        {"vars": [_v(name="slug", type="string", pattern=r"^[a-z0-9-]+$")]}
+    )
+    assert c.validate({"slug": "hello-world-123"}) == {"slug": "hello-world-123"}
+
+
+def test_pattern_rejects_non_matching_string():
+    c = Contract.parse(
+        {"vars": [_v(name="slug", type="string", pattern=r"^[a-z0-9-]+$")]}
+    )
+    with pytest.raises(PrimiBlocksError, match="pattern"):
+        c.validate({"slug": "Hello World"})
+
+
+def test_examples_is_informational_only():
+    """examples may be set but never affects validation."""
+    c = Contract.parse(
+        {"vars": [_v(name="x", type="string", examples=["foo", "bar"])]}
+    )
+    assert c.validate({"x": "anything-not-in-examples"}) == {
+        "x": "anything-not-in-examples"
+    }
+    assert c.vars[0].examples == ["foo", "bar"]
+
+
+def test_defaults_applied_before_type_check():
+    """A default must satisfy the var's type, but optional var with a default
+    should pass validation when the var is omitted."""
+    c = Contract.parse(
+        {"vars": [_v(name="k", type="int", required=False, default=5)]}
+    )
+    assert c.validate({}) == {"k": 5}
