@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "primiblocks"
+version = "0.1.0"
+description = "Clonable scaffold + methodology for building domain-specific primitive kits with composable templates and Claude Code skills."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "BunnyDAO" }]
+keywords = ["claude-code", "templates", "prompt-engineering", "scaffold", "jinja2"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "jinja2>=3.1",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+primiblocks = "primiblocks.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/BunnyDAO/PrimiBlocks"
+Repository = "https://github.com/BunnyDAO/PrimiBlocks"
+
+[tool.setuptools.packages.find]
+include = ["primiblocks*"]
+exclude = ["tests*", "kit*", "docs*", "issues*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"
