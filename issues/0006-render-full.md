@@ -2,7 +2,7 @@
 id: 0006
 title: render.py — full render with effective contract + Jinja primitive includes
 type: AFK
-status: open
+status: done
 blocked_by: [0005]
 parent: docs/prd/primiblocks-v1.md
 ---
