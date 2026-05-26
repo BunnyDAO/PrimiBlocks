@@ -74,6 +74,19 @@ See [CONTEXT.md](CONTEXT.md) — the project's canonical glossary. The most load
 
 ---
 
+## How this was built
+
+PrimiBlocks v1 was built using [**Valkyrie**](https://github.com/BunnyDAO/Valkyrie) — a workflow orchestrator that refuses to let you skip straight to implementation. Every coding task is forced through **DESIGN → PRD → ISSUES → TDD** before a single line of production code lands. A pre-commit hook actually blocks edits to production files while the stage is `design`, `prd`, or `issues` — the friction is the product.
+
+Concretely, here's what that produced for v1:
+
+- A grilling session that locked the architecture before any code (intent + domain + 9 sharpening questions)
+- A PRD at [`docs/prd/primiblocks-v1.md`](docs/prd/primiblocks-v1.md) that the human substantively approved decision-by-decision before issues were generated
+- 17 vertical-slice issues in [`issues/`](issues/), each independently grabbable with a `blocked_by` dependency map
+- Each issue implemented red-green-refactor — write the failing test, write the minimal code to pass, refactor, commit; one commit per slice; 97 tests at the end
+
+The two foundational ADRs ([0001](docs/adr/0001-bundled-python-renderer-not-sc-compose.md), [0002](docs/adr/0002-primitives-carry-contracts-that-bubble-up.md)) and the [glossary](CONTEXT.md) are durable artifacts of that flow — they were written *during* DESIGN, not bolted on after.
+
 ## Further reading
 
 - **[SOP.md](SOP.md)** — full operating procedure: non-developer path, developer path, contract grammar reference, CLI reference, skill UX, troubleshooting
