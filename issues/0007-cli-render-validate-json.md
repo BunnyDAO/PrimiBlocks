@@ -2,7 +2,7 @@
 id: 0007
 title: cli.py — render + validate subcommands with --json envelope
 type: AFK
-status: open
+status: done
 blocked_by: [0006]
 parent: docs/prd/primiblocks-v1.md
 ---
