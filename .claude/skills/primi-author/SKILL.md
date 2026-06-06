@@ -29,7 +29,7 @@ Run:
 primiblocks list primitives --kit-dir <KIT_DIR> --json
 ```
 
-The envelope's `data` is a list of `{name, vars}` objects. Hold this list.
+The envelope's `data` is `{kind: "primitives", items: [{name, vars}, ...]}` (since 0.2.1). Iterate `data.items`.
 
 If the kit is empty (no primitives), this skill can't compose anything. Tell the user to first author primitives directly (or file requests for them) and stop.
 

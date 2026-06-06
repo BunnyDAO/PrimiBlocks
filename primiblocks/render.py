@@ -38,18 +38,23 @@ class FrontmatterAwareLoader(FileSystemLoader):
         return body, filename, uptodate
 
 
-def render(template_name: str, vars: dict, kit_dir: Path) -> str:
+def render(
+    template_name: str,
+    vars: dict,
+    kit_dir: Path,
+    strict: bool = False,
+) -> str:
     """Render a template by name with the supplied vars.
 
     Returns the rendered string. Raises a `PrimiBlocksError` subclass on any
     contract violation (missing required var, type mismatch, constraint
-    violation) or missing template / primitive.
+    violation, unknown var if `strict=True`) or missing template / primitive.
     """
     kit_dir = Path(kit_dir)
     template = load_template(template_name, kit_dir)
     primitives_map = discover_primitives(kit_dir)
     contract = effective_contract(template, primitives_map)
-    validated = contract.validate(vars)
+    validated = contract.validate(vars, strict=strict)
     env = Environment(
         loader=FrontmatterAwareLoader(str(kit_dir)),
         autoescape=False,

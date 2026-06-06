@@ -1,12 +1,17 @@
 """The `primiblocks` CLI.
 
 argparse-driven subcommands. Each subcommand supports `--json` for a
-`{"ok": bool, "data"?, "error"?}` envelope; in human mode, success goes to
-stdout and errors go to stderr. Exit codes:
+**uniform** envelope:
 
-- 0 — success
-- 1 — contract / render / validation / lint error
-- 2 — usage error (handled by argparse)
+    {"ok": bool, "data": <payload>?, "error": {"code", "message"}?}
+
+`data` is the primary payload for the command (a string for render, a list
+for list, an object for contract / lint / doctor). `error.code` is a stable
+string from the error class's `.code` attribute (e.g. `missing_variable`,
+`unknown_variable`) — NOT the Python class name. Skills should branch on
+`code`, not on message text.
+
+Exit codes: 0 success · 1 contract/render/validation/lint error · 2 usage error.
 """
 
 import argparse
@@ -45,7 +50,7 @@ def _add_common_args(p: argparse.ArgumentParser) -> None:
         "--json",
         action="store_true",
         dest="json_mode",
-        help="Emit a JSON envelope on stdout instead of human-readable output.",
+        help="Emit a uniform JSON envelope on stdout instead of human-readable output.",
     )
 
 
@@ -65,9 +70,22 @@ def _emit_success(json_mode: bool, data, out_path: str | None = None) -> int:
     return 0
 
 
-def _emit_error(json_mode: bool, message: str, kind: str = "error") -> int:
+def _code_from_exc(e: Exception) -> str:
+    """Stable error code (never the Python class name)."""
+    if isinstance(e, PrimiBlocksError):
+        return e.code
+    if isinstance(e, FileNotFoundError):
+        return "file_not_found"
+    if isinstance(e, OSError):
+        return "os_error"
+    if isinstance(e, json.JSONDecodeError):
+        return "json_decode"
+    return "error"
+
+
+def _emit_error(json_mode: bool, message: str, code: str = "error") -> int:
     if json_mode:
-        print(json.dumps({"ok": False, "error": {"kind": kind, "message": message}}))
+        print(json.dumps({"ok": False, "error": {"code": code, "message": message}}))
     else:
         print(f"primiblocks: {message}", file=sys.stderr)
     return 1
@@ -84,11 +102,14 @@ def _load_vars(path: str | None) -> dict:
 def cmd_render(args: argparse.Namespace) -> int:
     try:
         vars_data = _load_vars(args.vars)
-        output = render(args.template, vars_data, kit_dir=Path(args.kit_dir))
-    except PrimiBlocksError as e:
-        return _emit_error(args.json_mode, str(e), kind=type(e).__name__)
-    except (OSError, json.JSONDecodeError) as e:
-        return _emit_error(args.json_mode, str(e), kind=type(e).__name__)
+        output = render(
+            args.template,
+            vars_data,
+            kit_dir=Path(args.kit_dir),
+            strict=args.strict,
+        )
+    except (PrimiBlocksError, OSError, json.JSONDecodeError) as e:
+        return _emit_error(args.json_mode, str(e), code=_code_from_exc(e))
     return _emit_success(args.json_mode, output, args.out)
 
 
@@ -101,11 +122,9 @@ def cmd_validate(args: argparse.Namespace) -> int:
         template = load_template(args.template, kit_dir)
         primitives_map = discover_primitives(kit_dir)
         contract = effective_contract(template, primitives_map)
-        contract.validate(vars_data)
-    except PrimiBlocksError as e:
-        return _emit_error(args.json_mode, str(e), kind=type(e).__name__)
-    except (OSError, json.JSONDecodeError) as e:
-        return _emit_error(args.json_mode, str(e), kind=type(e).__name__)
+        contract.validate(vars_data, strict=args.strict)
+    except (PrimiBlocksError, OSError, json.JSONDecodeError) as e:
+        return _emit_error(args.json_mode, str(e), code=_code_from_exc(e))
     return _emit_success(args.json_mode, None, None)
 
 
@@ -115,23 +134,27 @@ def cmd_lint(args: argparse.Namespace) -> int:
     issues = run_lint(Path(args.kit_dir))
     errors = [i for i in issues if i.severity == "error"]
     warnings = [i for i in issues if i.severity == "warning"]
+    payload = {
+        "errors": [
+            {"code": i.code, "message": i.message, "file": str(i.file) if i.file else None}
+            for i in errors
+        ],
+        "warnings": [
+            {"code": i.code, "message": i.message, "file": str(i.file) if i.file else None}
+            for i in warnings
+        ],
+    }
     if args.json_mode:
-        payload = {
-            "errors": [
-                {"code": i.code, "message": i.message, "file": str(i.file) if i.file else None}
-                for i in errors
-            ],
-            "warnings": [
-                {"code": i.code, "message": i.message, "file": str(i.file) if i.file else None}
-                for i in warnings
-            ],
-        }
-        ok = len(errors) == 0
-        if ok:
-            print(json.dumps({"ok": True, "data": payload}))
-            return 0
-        print(json.dumps({"ok": False, "error": {"kind": "lint", "message": "lint errors", "issues": payload}}))
-        return 1
+        # Uniform envelope: data ALWAYS holds the primary payload, even on
+        # error. Skills can read data.errors / data.warnings regardless of ok.
+        if errors:
+            print(json.dumps(
+                {"ok": False, "data": payload,
+                 "error": {"code": "lint_errors", "message": f"{len(errors)} lint error(s)"}}
+            ))
+            return 1
+        print(json.dumps({"ok": True, "data": payload}))
+        return 0
     if not issues:
         print("primiblocks: kit lints clean.")
         return 0
@@ -158,9 +181,9 @@ def cmd_list(args: argparse.Namespace) -> int:
                 for p in discover_primitives(kit_dir).values()
             ]
     except PrimiBlocksError as e:
-        return _emit_error(args.json_mode, str(e), kind=type(e).__name__)
+        return _emit_error(args.json_mode, str(e), code=_code_from_exc(e))
     if args.json_mode:
-        print(json.dumps({"ok": True, "data": items}))
+        print(json.dumps({"ok": True, "data": {"kind": args.what, "items": items}}))
         return 0
     if not items:
         print(f"primiblocks: no {args.what} found in {kit_dir}/")
@@ -180,7 +203,7 @@ def cmd_new(args: argparse.Namespace) -> int:
     try:
         path = scaffold(args.kind, args.name, kit_dir=Path(args.kit_dir))
     except PrimiBlocksError as e:
-        return _emit_error(args.json_mode, str(e), kind=type(e).__name__)
+        return _emit_error(args.json_mode, str(e), code=_code_from_exc(e))
     if args.json_mode:
         print(json.dumps({"ok": True, "data": {"path": str(path)}}))
     else:
@@ -199,10 +222,7 @@ def cmd_contract(args: argparse.Namespace) -> int:
         primitives_map = discover_primitives(kit_dir)
         contract = effective_contract(template, primitives_map)
     except PrimiBlocksError as e:
-        return _emit_error(args.json_mode, str(e), kind=type(e).__name__)
-    # Build a grouped view: which primitive contributed each var.
-    # Vars contributed by both a primitive and the template (override case)
-    # are attributed to the template.
+        return _emit_error(args.json_mode, str(e), code=_code_from_exc(e))
     template_var_names = {v.name for v in template.contract.vars}
     var_to_source: dict[str, str] = {}
     for prim_name in template.primitives:
@@ -234,11 +254,6 @@ def cmd_contract(args: argparse.Namespace) -> int:
         )
     payload = {
         "template": template.name,
-        "template_description": (
-            template.body.split("\n", 1)[0]
-            if not getattr(template, "description", None)
-            else template.description
-        ),
         "primitives": template.primitives,
         "vars": vars_payload,
     }
@@ -272,7 +287,6 @@ def cmd_contract(args: argparse.Namespace) -> int:
 
 def cmd_doctor(args: argparse.Namespace) -> int:
     checks: list[dict] = []
-    # Python version
     ok_py = sys.version_info >= (3, 11)
     checks.append(
         {
@@ -281,47 +295,28 @@ def cmd_doctor(args: argparse.Namespace) -> int:
             "detail": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
         }
     )
-    # Deps
     for dep in ("jinja2", "yaml"):
         try:
             __import__(dep)
             checks.append({"name": f"dep_{dep}", "ok": True, "detail": "importable"})
         except ImportError as e:
             checks.append({"name": f"dep_{dep}", "ok": False, "detail": str(e)})
-    # Kit dir
     kit_dir = Path(args.kit_dir)
+    checks.append({"name": "kit_dir_exists", "ok": kit_dir.is_dir(), "detail": str(kit_dir)})
     checks.append(
-        {
-            "name": "kit_dir_exists",
-            "ok": kit_dir.is_dir(),
-            "detail": str(kit_dir),
-        }
+        {"name": "kit_primitives_dir", "ok": (kit_dir / "primitives").is_dir(),
+         "detail": str(kit_dir / "primitives")}
     )
     checks.append(
-        {
-            "name": "kit_primitives_dir",
-            "ok": (kit_dir / "primitives").is_dir(),
-            "detail": str(kit_dir / "primitives"),
-        }
+        {"name": "kit_templates_dir", "ok": (kit_dir / "templates").is_dir(),
+         "detail": str(kit_dir / "templates")}
     )
-    checks.append(
-        {
-            "name": "kit_templates_dir",
-            "ok": (kit_dir / "templates").is_dir(),
-            "detail": str(kit_dir / "templates"),
-        }
-    )
-    # Lint clean
     try:
         issues = run_lint(kit_dir)
         lint_errors = [i for i in issues if i.severity == "error"]
         checks.append(
-            {
-                "name": "kit_lint_clean",
-                "ok": len(lint_errors) == 0,
-                "detail": f"{len(lint_errors)} errors, "
-                f"{len(issues) - len(lint_errors)} warnings",
-            }
+            {"name": "kit_lint_clean", "ok": len(lint_errors) == 0,
+             "detail": f"{len(lint_errors)} errors, {len(issues) - len(lint_errors)} warnings"}
         )
     except Exception as e:
         checks.append(
@@ -329,8 +324,13 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         )
     overall_ok = all(c["ok"] for c in checks)
     if args.json_mode:
-        envelope = {"ok": overall_ok, "data": {"checks": checks}}
-        print(json.dumps(envelope))
+        if overall_ok:
+            print(json.dumps({"ok": True, "data": {"checks": checks}}))
+        else:
+            print(json.dumps(
+                {"ok": False, "data": {"checks": checks},
+                 "error": {"code": "doctor_failed", "message": "one or more checks failed"}}
+            ))
     else:
         for c in checks:
             mark = "[ok]  " if c["ok"] else "[FAIL]"
@@ -358,6 +358,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_render.add_argument("template", help="Template name (without .j2 extension).")
     p_render.add_argument("--vars", help="Path to a JSON file of variable values.")
     p_render.add_argument("--out", help="Write the rendered artifact to this path.")
+    p_render.add_argument(
+        "--strict",
+        action="store_true",
+        help="Reject supplied vars not declared in the effective contract (default: off).",
+    )
     _add_common_args(p_render)
     p_render.set_defaults(func=cmd_render)
 
@@ -367,6 +372,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_validate.add_argument("template", help="Template name (without .j2 extension).")
     p_validate.add_argument("--vars", help="Path to a JSON file of variable values.")
+    p_validate.add_argument(
+        "--strict",
+        action="store_true",
+        help="Reject supplied vars not declared in the effective contract (default: off).",
+    )
     _add_common_args(p_validate)
     p_validate.set_defaults(func=cmd_validate)
 

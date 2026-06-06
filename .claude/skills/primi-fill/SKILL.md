@@ -23,7 +23,7 @@ Run:
 primiblocks list templates --kit-dir <KIT_DIR> --json
 ```
 
-`<KIT_DIR>` defaults to `./kit` if the user doesn't specify one. The JSON envelope's `data` is a list of `{name, primitives, vars}` objects.
+`<KIT_DIR>` defaults to `./kit` if the user doesn't specify one. The JSON envelope's `data` is `{kind: "templates", items: [{name, primitives, vars}, ...]}` (since 0.2.1 envelope normalization).
 
 If the list is empty, tell the user: *"No templates found in `<KIT_DIR>/templates/`. Run `primiblocks new template <name>` to scaffold one."* Then stop.
 

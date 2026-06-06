@@ -10,6 +10,8 @@ Slice history:
 - 0001 — skinny: name + required + default
 - 0002 — typed validation (string/int/float/bool/list/path/enum)
 - 0003 — description required + constraints (enum, min, max, pattern, examples)
+- 0.2.0 — hidden flag (UX hint for skills)
+- 0.2.1 — strict mode (unknown vars), default type-check at parse, stable error codes
 """
 
 import re
@@ -17,8 +19,12 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from primiblocks.errors import (
+    ConstraintViolationError,
+    ContractParseError,
+    DefaultTypeError,
     MissingVariableError,
-    PrimiBlocksError,
+    TypeMismatchError,
+    UnknownVariableError,
 )
 
 
@@ -56,7 +62,11 @@ class Contract:
 
     @classmethod
     def parse(cls, frontmatter: dict | None) -> "Contract":
-        """Build a Contract from a parsed YAML frontmatter dict."""
+        """Build a Contract from a parsed YAML frontmatter dict.
+
+        Raises `DefaultTypeError` (0.2.1) if a var declares both `type` and a
+        non-None `default` whose runtime type doesn't satisfy the declared type.
+        """
         if not frontmatter:
             return cls(vars=[])
         raw_vars = frontmatter.get("vars") or []
@@ -64,27 +74,36 @@ class Contract:
         for v in raw_vars:
             name = v["name"]
             if "type" not in v:
-                raise PrimiBlocksError(
+                raise ContractParseError(
                     f"variable {name!r}: missing 'type' field in contract"
                 )
             type_ = v["type"]
             if type_ not in VALID_TYPES:
-                raise PrimiBlocksError(
+                raise ContractParseError(
                     f"variable {name!r}: unknown type {type_!r} "
                     f"(valid: {sorted(VALID_TYPES)})"
                 )
             if "description" not in v or not str(v.get("description", "")).strip():
-                raise PrimiBlocksError(
+                raise ContractParseError(
                     f"variable {name!r}: missing required 'description' "
                     "field in contract"
                 )
+            default = v.get("default")
+            if default is not None:
+                try:
+                    _check_type(name, type_, default)
+                except TypeMismatchError as e:
+                    raise DefaultTypeError(
+                        f"variable {name!r}: default value does not satisfy "
+                        f"declared type {type_!r} — {e}"
+                    ) from e
             parsed.append(
                 Var(
                     name=name,
                     type=type_,
                     description=v["description"],
                     required=v.get("required", True),
-                    default=v.get("default"),
+                    default=default,
                     enum=v.get("enum"),
                     min=v.get("min"),
                     max=v.get("max"),
@@ -95,9 +114,14 @@ class Contract:
             )
         return cls(vars=parsed)
 
-    def validate(self, supplied: dict) -> dict:
+    def validate(self, supplied: dict, strict: bool = False) -> dict:
         """Return validated vars with defaults applied. Raise on missing
-        required, type mismatch, or constraint violation."""
+        required, type mismatch, or constraint violation.
+
+        When `strict=True` (0.2.1+), also raises `UnknownVariableError` on
+        any supplied key that isn't in the contract. Default off for
+        backward compatibility; planned default-on in 0.3.0.
+        """
         result: dict[str, Any] = {}
         declared_names = {v.name for v in self.vars}
         for var in self.vars:
@@ -112,6 +136,12 @@ class Contract:
                 raise MissingVariableError(
                     f"missing required variable: {var.name!r}"
                 )
+        unknown = [k for k in supplied if k not in declared_names]
+        if strict and unknown:
+            raise UnknownVariableError(
+                f"unknown variable(s) supplied (not in contract): {sorted(unknown)!r}. "
+                "Pass without --strict to allow pass-through (legacy behavior)."
+            )
         for k, v in supplied.items():
             if k not in declared_names:
                 result[k] = v
@@ -119,44 +149,44 @@ class Contract:
 
 
 def _check_type(name: str, type_: str, value: Any) -> None:
-    """Raise PrimiBlocksError if `value` does not match the declared `type_`.
+    """Raise `TypeMismatchError` if `value` does not match the declared `type_`.
 
     Special case: int and float explicitly reject bool, because Python's
     `isinstance(True, int)` is True and that's a common silent bug.
     """
     if type_ == "string":
         if not isinstance(value, str):
-            raise PrimiBlocksError(
+            raise TypeMismatchError(
                 f"variable {name!r} expected type 'string', got {type(value).__name__}"
             )
     elif type_ == "int":
         if isinstance(value, bool) or not isinstance(value, int):
-            raise PrimiBlocksError(
+            raise TypeMismatchError(
                 f"variable {name!r} expected type 'int', got {type(value).__name__}"
             )
     elif type_ == "float":
         if isinstance(value, bool) or not isinstance(value, (int, float)):
-            raise PrimiBlocksError(
+            raise TypeMismatchError(
                 f"variable {name!r} expected type 'float', got {type(value).__name__}"
             )
     elif type_ == "bool":
         if not isinstance(value, bool):
-            raise PrimiBlocksError(
+            raise TypeMismatchError(
                 f"variable {name!r} expected type 'bool', got {type(value).__name__}"
             )
     elif type_ == "list":
         if not isinstance(value, list):
-            raise PrimiBlocksError(
+            raise TypeMismatchError(
                 f"variable {name!r} expected type 'list', got {type(value).__name__}"
             )
     elif type_ == "path":
         if not isinstance(value, str):
-            raise PrimiBlocksError(
+            raise TypeMismatchError(
                 f"variable {name!r} expected type 'path' (string), got {type(value).__name__}"
             )
     elif type_ == "enum":
         if not isinstance(value, str):
-            raise PrimiBlocksError(
+            raise TypeMismatchError(
                 f"variable {name!r} expected type 'enum' (string), got {type(value).__name__}"
             )
 
@@ -165,30 +195,30 @@ def _check_constraints(var: Var, value: Any) -> None:
     """Enforce enum / min / max / pattern constraints. `examples` is informational."""
     if var.enum is not None:
         if value not in var.enum:
-            raise PrimiBlocksError(
+            raise ConstraintViolationError(
                 f"variable {var.name!r} value {value!r} not in enum {var.enum}"
             )
     if var.type in ("int", "float"):
         if var.min is not None and value < var.min:
-            raise PrimiBlocksError(
+            raise ConstraintViolationError(
                 f"variable {var.name!r} value {value} below min {var.min}"
             )
         if var.max is not None and value > var.max:
-            raise PrimiBlocksError(
+            raise ConstraintViolationError(
                 f"variable {var.name!r} value {value} above max {var.max}"
             )
     elif var.type == "list":
         if var.min is not None and len(value) < var.min:
-            raise PrimiBlocksError(
+            raise ConstraintViolationError(
                 f"variable {var.name!r} list length {len(value)} below min {var.min}"
             )
         if var.max is not None and len(value) > var.max:
-            raise PrimiBlocksError(
+            raise ConstraintViolationError(
                 f"variable {var.name!r} list length {len(value)} above max {var.max}"
             )
     if var.pattern is not None and var.type in ("string", "enum", "path"):
         if not re.match(var.pattern, value):
-            raise PrimiBlocksError(
+            raise ConstraintViolationError(
                 f"variable {var.name!r} value {value!r} does not match "
                 f"pattern {var.pattern!r}"
             )

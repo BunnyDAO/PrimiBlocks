@@ -314,8 +314,56 @@ def test_list_templates_json(tmp_path):
     assert r.returncode == 0
     envelope = json.loads(r.stdout)
     assert envelope["ok"] is True
-    names = [item["name"] for item in envelope["data"]]
+    # 0.2.1 #6: envelope.data normalized to {kind, items}
+    assert envelope["data"]["kind"] == "templates"
+    names = [item["name"] for item in envelope["data"]["items"]]
     assert "letter" in names
+
+
+def test_render_strict_rejects_unknown_var(tmp_path):
+    """0.2.1 #1 — --strict at the CLI surfaces UnknownVariableError."""
+    kit = _write_kit(tmp_path)
+    vars_path = tmp_path / "vars.json"
+    vars_path.write_text(json.dumps({"name": "World", "tone": "casual", "extra": "boom"}))
+    r = _run(
+        "render", "letter",
+        "--kit-dir", str(kit),
+        "--vars", str(vars_path),
+        "--strict",
+        "--json",
+    )
+    assert r.returncode == 1
+    envelope = json.loads(r.stdout)
+    assert envelope["ok"] is False
+    assert envelope["error"]["code"] == "unknown_variable"
+
+
+def test_render_without_strict_accepts_unknown_var(tmp_path):
+    """Default off: unknown vars pass through silently for backward compat."""
+    kit = _write_kit(tmp_path)
+    vars_path = tmp_path / "vars.json"
+    vars_path.write_text(json.dumps({"name": "World", "tone": "casual", "extra": "ok"}))
+    r = _run(
+        "render", "letter",
+        "--kit-dir", str(kit),
+        "--vars", str(vars_path),
+    )
+    assert r.returncode == 0
+    assert "Hello, World!" in r.stdout
+
+
+def test_error_envelope_uses_stable_code_not_class_name(tmp_path):
+    """0.2.1 #7 — error.code must be the stable string, not the Python class name."""
+    kit = _write_kit(tmp_path)
+    r = _run(
+        "render", "letter",
+        "--kit-dir", str(kit),
+        "--json",
+    )
+    assert r.returncode == 1
+    envelope = json.loads(r.stdout)
+    assert envelope["error"]["code"] == "missing_variable"
+    assert "Error" not in envelope["error"]["code"]
 
 
 # ── new ───────────────────────────────────────────────────────────────────

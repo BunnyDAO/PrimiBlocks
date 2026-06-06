@@ -8,7 +8,8 @@ two severities:
   (drift between `primitives:` frontmatter and `{% include %}` statements,
   broken includes, malformed frontmatter)
 - `warning` — something the renderer tolerates but a maintainer should
-  know about (e.g., primitives that aren't composed by any template)
+  know about (orphan primitives, unused vars, primitive-primitive var
+  collisions, recursive primitive includes)
 
 Returns a list of `LintIssue` so callers (CLI, doctor) can format as they
 wish (human text, JSON).
@@ -19,7 +20,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-from primiblocks._frontmatter import split as split_frontmatter
 from primiblocks.errors import PrimiBlocksError
 from primiblocks.primitives import discover as discover_primitives
 from primiblocks.templates import discover as discover_templates
@@ -41,6 +41,18 @@ class LintIssue:
     code: str
     message: str
     file: Path | None = None
+
+
+def _var_referenced_in_body(var_name: str, body: str) -> bool:
+    """Heuristic: does the body reference `var_name` anywhere a Jinja2
+    expression could see it? Catches `{{ var_name }}`, `{% if var_name %}`,
+    `{% for x in var_name %}`, `{% with var_name=... %}`, etc.
+
+    Won't catch dynamic access like `{{ vars[var_name_str] }}`, but those are
+    rare and not worth false-positive risk."""
+    # Word-boundary match: `var_name` as a token, not as a substring of another.
+    pattern = re.compile(r"\b" + re.escape(var_name) + r"\b")
+    return bool(pattern.search(body))
 
 
 def lint(kit_dir: Path) -> list[LintIssue]:
@@ -105,6 +117,66 @@ def lint(kit_dir: Path) -> list[LintIssue]:
                         file=template.path,
                     )
                 )
+
+        # 0.2.1 #4 — Warn on primitive-primitive var collisions where the
+        # template doesn't override (template-overridden collisions are an
+        # intentional and documented mechanism; primitive-primitive ones are
+        # almost always an accident — the later primitive's contract is
+        # silently shadowed).
+        template_var_names = {v.name for v in template.contract.vars}
+        # var_name -> list of primitive_names that declared it
+        primitive_decls: dict[str, list[str]] = {}
+        for prim_name in template.primitives:
+            if prim_name not in primitives_map:
+                continue
+            for v in primitives_map[prim_name].contract.vars:
+                primitive_decls.setdefault(v.name, []).append(prim_name)
+        for var_name, prims in primitive_decls.items():
+            if len(prims) > 1 and var_name not in template_var_names:
+                issues.append(
+                    LintIssue(
+                        "warning",
+                        "primitive-var-collision",
+                        f"template {tname!r}: var {var_name!r} is declared by "
+                        f"multiple primitives ({prims!r}); first-listed wins. "
+                        f"Override at template level to make it explicit.",
+                        file=template.path,
+                    )
+                )
+
+    # 0.2.1 #5 — Warn on declared-but-unreferenced vars in primitives.
+    for pname, primitive in primitives_map.items():
+        for var in primitive.contract.vars:
+            if not _var_referenced_in_body(var.name, primitive.body):
+                issues.append(
+                    LintIssue(
+                        "warning",
+                        "unused-var",
+                        f"primitive {pname!r}: var {var.name!r} declared in "
+                        f"contract but never referenced in body. Likely a "
+                        f"stale declaration (rename, removed usage, typo).",
+                        file=primitive.path,
+                    )
+                )
+
+    # 0.2.1 #8 — Warn on recursive primitive includes (primitive body
+    # {% include %}s another primitive). The renderer's contract-bubbling
+    # only walks templates' primitives: list, not nested primitive
+    # includes — so the inner primitive's contract WILL NOT bubble up.
+    # This is a v0.2 architectural limit; v0.3.0 may lift it.
+    for pname, primitive in primitives_map.items():
+        for referenced in INCLUDE_RE.findall(primitive.body):
+            issues.append(
+                LintIssue(
+                    "warning",
+                    "recursive-primitive-include",
+                    f"primitive {pname!r}: body includes another primitive "
+                    f"({referenced!r}). The inner primitive's contract will "
+                    f"NOT bubble up — declare it in any template that uses "
+                    f"this primitive, or inline its body here.",
+                    file=primitive.path,
+                )
+            )
 
     # Warning: orphan primitives (no template composes them)
     for pname in primitives_map:

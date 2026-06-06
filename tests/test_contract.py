@@ -6,7 +6,11 @@ import re
 import pytest
 
 from primiblocks.contract import Contract
-from primiblocks.errors import PrimiBlocksError
+from primiblocks.errors import (
+    DefaultTypeError,
+    PrimiBlocksError,
+    UnknownVariableError,
+)
 
 
 # ── 0002 — type system ────────────────────────────────────────────────────
@@ -261,3 +265,71 @@ def test_hidden_does_not_affect_validation():
     assert c.validate({"x": 10}) == {"x": 10}
     with pytest.raises(PrimiBlocksError):
         c.validate({"x": "not-an-int"})
+
+
+# ── 0.2.1 — strict mode (unknown vars) ────────────────────────────────────
+
+def test_unknown_vars_pass_through_by_default():
+    """Legacy behavior: validate() silently accepts unknown supplied vars."""
+    c = _contract({"name": "x", "type": "string"})
+    result = c.validate({"x": "hello", "extra": "ignored-by-contract"})
+    assert result == {"x": "hello", "extra": "ignored-by-contract"}
+
+
+def test_unknown_vars_rejected_under_strict():
+    """strict=True raises UnknownVariableError on supplied vars not in contract."""
+    c = _contract({"name": "x", "type": "string"})
+    with pytest.raises(UnknownVariableError, match="extra"):
+        c.validate({"x": "hello", "extra": "boom"}, strict=True)
+
+
+def test_strict_lists_all_unknown_vars():
+    c = _contract({"name": "x", "type": "string"})
+    with pytest.raises(UnknownVariableError) as exc:
+        c.validate({"x": "ok", "typo1": 1, "typo2": 2}, strict=True)
+    assert "typo1" in str(exc.value)
+    assert "typo2" in str(exc.value)
+
+
+def test_strict_passes_when_all_vars_declared():
+    c = _contract({"name": "x", "type": "string"})
+    assert c.validate({"x": "ok"}, strict=True) == {"x": "ok"}
+
+
+# ── 0.2.1 — type-check defaults at parse ─────────────────────────────────
+
+def test_default_typecheck_passes_when_default_matches_type():
+    Contract.parse(
+        {"vars": [_v(name="k", type="int", required=False, default=5)]}
+    )  # no raise
+
+
+def test_default_typecheck_rejects_string_default_on_int_type():
+    with pytest.raises(DefaultTypeError, match=re.compile(r"default", re.I)):
+        Contract.parse(
+            {"vars": [_v(name="k", type="int", required=False, default="5")]}
+        )
+
+
+def test_default_typecheck_rejects_int_default_on_list_type():
+    with pytest.raises(DefaultTypeError):
+        Contract.parse(
+            {"vars": [_v(name="xs", type="list", required=False, default=5)]}
+        )
+
+
+def test_default_none_is_always_allowed():
+    """Explicit `default: null` (or absent default) doesn't trigger type-check."""
+    Contract.parse(
+        {"vars": [_v(name="k", type="int", required=False, default=None)]}
+    )  # no raise
+    Contract.parse(
+        {"vars": [_v(name="k", type="int", required=False)]}
+    )  # no raise
+
+
+def test_default_typecheck_error_cites_field_name():
+    with pytest.raises(DefaultTypeError, match="my_var"):
+        Contract.parse(
+            {"vars": [_v(name="my_var", type="bool", required=False, default="true")]}
+        )
