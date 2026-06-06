@@ -24,7 +24,6 @@ from primiblocks.errors import PrimiBlocksError
 from primiblocks.primitives import discover as discover_primitives
 from primiblocks.templates import discover as discover_templates
 
-
 # Matches {% include "primitives/<name>.j2" %} (single- or double-quoted, with
 # optional whitespace inside the tag).
 INCLUDE_RE = re.compile(

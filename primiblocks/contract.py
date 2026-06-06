@@ -27,7 +27,6 @@ from primiblocks.errors import (
     UnknownVariableError,
 )
 
-
 VALID_TYPES: frozenset[str] = frozenset(
     {"string", "int", "float", "bool", "list", "path", "enum"}
 )

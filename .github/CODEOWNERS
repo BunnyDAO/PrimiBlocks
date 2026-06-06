@@ -1,0 +1,7 @@
+# Default owner for all PR reviews.
+# Lines override each other; the last matching pattern wins.
+*  @BunnyDAO
+
+# Architectural decisions and PRDs get an extra eye.
+/docs/adr/   @BunnyDAO
+/docs/prd/   @BunnyDAO

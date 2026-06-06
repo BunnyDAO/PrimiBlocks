@@ -35,6 +35,8 @@ from primiblocks.render import render
 from primiblocks.scaffold import scaffold
 from primiblocks.templates import (
     discover as discover_templates,
+)
+from primiblocks.templates import (
     effective_contract,
     load_template,
 )
@@ -261,25 +263,31 @@ def cmd_contract(args: argparse.Namespace) -> int:
         print(json.dumps({"ok": True, "data": payload}))
     else:
         print(f"Template: {payload['template']}")
-        print(f"Composes primitives: {', '.join(payload['primitives']) or 'none'}\n")
+        print(
+            f"Composes primitives: {', '.join(template.primitives) or 'none'}\n"
+        )
         last_source = None
-        for v in vars_payload:
-            if v["source"] != last_source:
-                print(f"-- from {v['source']} --")
-                last_source = v["source"]
-            req = "required" if v["required"] else f"optional (default: {v['default']!r})"
+        for entry in vars_payload:
+            if entry["source"] != last_source:
+                print(f"-- from {entry['source']} --")
+                last_source = entry["source"]
+            req = (
+                "required"
+                if entry["required"]
+                else f"optional (default: {entry['default']!r})"
+            )
             extras = []
-            if v["enum"]:
-                extras.append(f"enum: {v['enum']}")
-            if v["min"] is not None:
-                extras.append(f"min: {v['min']}")
-            if v["max"] is not None:
-                extras.append(f"max: {v['max']}")
-            if v["pattern"]:
-                extras.append(f"pattern: {v['pattern']!r}")
+            if entry["enum"]:
+                extras.append(f"enum: {entry['enum']}")
+            if entry["min"] is not None:
+                extras.append(f"min: {entry['min']}")
+            if entry["max"] is not None:
+                extras.append(f"max: {entry['max']}")
+            if entry["pattern"]:
+                extras.append(f"pattern: {entry['pattern']!r}")
             extras_str = f"  [{'; '.join(extras)}]" if extras else ""
-            print(f"  {v['name']}: {v['type']}, {req}{extras_str}")
-            print(f"      {v['description']}")
+            print(f"  {entry['name']}: {entry['type']}, {req}{extras_str}")
+            print(f"      {entry['description']}")
     return 0
 
 

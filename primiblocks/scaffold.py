@@ -5,7 +5,6 @@ from textwrap import dedent
 
 from primiblocks.errors import PrimiBlocksError
 
-
 TEMPLATE_STUB = dedent(
     """\
     ---

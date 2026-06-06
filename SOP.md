@@ -189,6 +189,33 @@ Mark a var `hidden: true` when the var exists in the contract (for validation, d
 
 If you actually want a value to be unoverridable (a literal constant that no caller — skill, CLI, or future maintainer — can change), **don't declare it as a contract var at all.** Bake it into the primitive's body as a plain string. Contract vars are knobs by definition; hiding a knob from the UI doesn't make it not-a-knob.
 
+**A future `sealed: true` flag is under consideration** for v0.3.0 that *would* lock a var against `--vars`-supply overrides. Until that ships, "bake the literal into the primitive body" is the only true lockdown mechanism. Don't use `hidden: true` for security; it isn't.
+
+## Architectural limits in v0.2.x
+
+These are real, documented limits — not bugs, but things to know if your kit pushes the framework.
+
+### Primitive-primitive composition is not supported
+
+A primitive's body CAN technically `{% include %}` another primitive (Jinja2 allows it), but the renderer's contract-bubbling logic does NOT walk recursively into primitive bodies — only into the *template's* `primitives: [...]` list. So if `outer.j2` includes `inner.j2`, and `inner.j2` declares a var, that var does NOT bubble into any template that includes only `outer`.
+
+`primiblocks lint` now warns on this (code: `recursive-primitive-include`). Workarounds:
+
+1. List every primitive your kit composes — including transitively included ones — in the template's `primitives:` field, and include them explicitly in the template body too.
+2. Or inline the inner primitive's body into the outer one.
+
+A real recursion-aware contract bubbler is planned for v0.3.0.
+
+### Strict mode is opt-in, not default
+
+`primiblocks render` and `validate` accept supplied vars not declared in the contract (legacy v0.2.0 behavior). Pass `--strict` to reject them. The flag will flip to default-on in v0.3.0; for v0.2.x, kits that want the safety net should set up CI to pass `--strict` to validate against their `vars.example.json`.
+
+### Vendored framework: kits don't auto-update
+
+Each forked kit ships a complete copy of `primiblocks/` (the renderer module). When PrimiBlocks itself updates — e.g. v0.2.0 → v0.2.1 ships better error codes — kits stay on whatever version they vendored. There's no `primiblocks update` command.
+
+In practice this means a kit on v0.2.0 keeps working but doesn't get new features or fixes. The planned v1.0 transition is to publish PrimiBlocks to PyPI and have kits declare `primiblocks>=1.0` as a `pyproject.toml` dependency (no more vendoring). Until then, the workaround is a manual `git diff` against upstream.
+
 ## Authoring a primitive
 
 A primitive is one `.j2` file under `kit/primitives/`. Minimal example:

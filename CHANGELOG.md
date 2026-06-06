@@ -6,6 +6,52 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-06-06
+
+### Added
+
+- **`--strict` flag** on `render` and `validate`. When set, raises
+  `UnknownVariableError` (code: `unknown_variable`) on supplied vars that
+  aren't declared in the effective contract. Default off for backward
+  compat; planned default-on in 0.3.0.
+- **`DefaultTypeError`** raised at `Contract.parse` time when a var's
+  declared `type` and `default` don't match (e.g. `type: int, default: "5"`).
+  Catches author bugs at the offending file, not in a confusing Jinja stack.
+- **Lint warnings:**
+  - `primitive-var-collision` — two primitives declare the same var name
+    and the template doesn't override (silent first-wins shadowing).
+  - `unused-var` — primitive declares a var that never appears in its body.
+  - `recursive-primitive-include` — a primitive body `{% include %}`s
+    another primitive (contract bubbling doesn't walk recursively in v0.2).
+- **`.github/CODEOWNERS`** routes PR reviews to `@BunnyDAO`.
+- **CI lint job** runs `ruff check` + `mypy` against `primiblocks/`.
+- **Python 3.14** added to the CI pytest matrix (now 4 versions × 3 OSes).
+
+### Changed
+
+- **Stable error codes** — every `PrimiBlocksError` subclass declares a
+  `.code` string attribute (e.g. `missing_variable`, `unknown_variable`,
+  `template_not_found`). The CLI's `--json` envelope's `error.kind` is
+  renamed to `error.code` and uses these stable strings instead of the
+  Python class name. Skills should branch on `code`, not message text.
+- **Uniform `--json` envelope shape:**
+  - All commands return `{ok, data?, error?}`.
+  - `list templates|primitives --json` now returns `data: {kind, items}`
+    instead of a bare list.
+  - `lint --json` includes `data: {errors, warnings}` regardless of `ok`.
+  - `doctor --json` includes `data: {checks}` regardless of `ok`.
+- **Skill markdown updated** to consume the normalized envelope shape.
+- **Frontmatter heuristic:** leading `---`-fenced blocks are treated as
+  frontmatter only when their content matches a YAML key-value shape.
+  Bodies that legitimately begin with a markdown horizontal rule no
+  longer get misparsed.
+
+### Fixed
+
+- **`Contract.validate` previously silently accepted unknown supplied
+  vars.** Still does by default (for backward compat), but `--strict`
+  rejects them with `unknown_variable`. Will flip to default-on in 0.3.0.
+
 ## [0.2.0] — 2026-05-25
 
 ### Added
@@ -49,7 +95,8 @@ notes.
 - Cross-OS CI: macOS / Linux / Windows × Python 3.11 / 3.12 / 3.13.
 - SOP and README with 6 v1 SVG diagrams.
 
-[Unreleased]: https://github.com/BunnyDAO/PrimiBlocks/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/BunnyDAO/PrimiBlocks/releases/tag/v0.2.0
-[0.1.1]: https://github.com/BunnyDAO/PrimiBlocks/releases/tag/v0.1.1
-[0.1.0]: https://github.com/BunnyDAO/PrimiBlocks/releases/tag/v0.1.0
+[Unreleased]: https://github.com/BunnyDAO/PrimiBlocks/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/BunnyDAO/PrimiBlocks/tree/v0.2.1
+[0.2.0]: https://github.com/BunnyDAO/PrimiBlocks/tree/v0.2.0
+[0.1.1]: https://github.com/BunnyDAO/PrimiBlocks/tree/v0.1.1
+[0.1.0]: https://github.com/BunnyDAO/PrimiBlocks/tree/v0.1.0

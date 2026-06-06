@@ -1,4 +1,23 @@
-# PrimiBlocks v0.1.0 — release prep
+# PrimiBlocks — release operations
+
+## Branch protection + admin bypass policy (as of 0.2.1)
+
+The `main` branch ruleset (`main protection`) requires:
+
+- 1 approving review from a reviewer with write access
+- All 9 cross-OS pytest matrix cells green
+- Linear history (no merge commits)
+- No force pushes; no direct deletion of `main`
+
+**Admin role is in the ruleset's `bypass_actors` list** (`bypass_mode: always`). This means:
+
+- Admins can `gh pr merge --admin --squash` their own PRs.
+- The day-to-day "you need approval + green CI" rule still applies to all PRs you don't actively bypass.
+- Admin bypass is intentional: with one active maintainer (sole-write access), there's no second person to approve self-authored PRs. Without the bypass, even trivial typo fixes would be unmergeable without a workaround.
+
+To remove the bypass (e.g., once a second writer joins): edit ruleset 16859734 and clear the `bypass_actors` list. The PR can still be merged via the second writer's approval.
+
+# v0.1.0 — release prep
 
 This file documents the release ritual for v0.1.0. The local work (tag, release-notes draft) is done; the **GitHub UI steps** at the bottom are on you because they require account access.
 
